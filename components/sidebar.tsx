@@ -1,20 +1,31 @@
-import Link from 'next/link'
+import {
+  LayoutDashboard,
+  Users,
+  CalendarClock,
+  Star,
+  Newspaper,
+  Image as ImageIcon,
+  Settings,
+} from 'lucide-react'
 import { getUserPermissions } from '@/lib/permissions'
 import LogoutButton from './logout-button'
+import SidebarNavLink from './sidebar-nav-link'
 
-// Peta menu_key -> path URL
-const MENU_PATHS: Record<string, string> = {
-  members: '/dashboard/members',
-  schedules: '/dashboard/schedules',
-  events: '/dashboard/events',
-  gallery: '/dashboard/gallery',
-  settings: '/dashboard/settings',
+const MENU_CONFIG: Record<
+  string,
+  { path: string; icon: React.ComponentType<{ className?: string }> }
+> = {
+  members: { path: '/dashboard/members', icon: Users },
+  schedules: { path: '/dashboard/schedules', icon: CalendarClock },
+  events: { path: '/dashboard/events', icon: Star },
+  news: { path: '/dashboard/news', icon: Newspaper },
+  gallery: { path: '/dashboard/gallery', icon: ImageIcon },
+  settings: { path: '/dashboard/settings', icon: Settings },
 }
 
 export default async function Sidebar() {
   const permissions = await getUserPermissions()
 
-  // Ambil hanya menu yang boleh dilihat (can_view = true), lalu urutkan
   const menus = (permissions ?? [])
     .filter((p) => p.can_view && p.permissions)
     .map((p) => ({
@@ -25,24 +36,38 @@ export default async function Sidebar() {
     .sort((a, b) => a.sort - b.sort)
 
   return (
-    <aside className="w-60 bg-gray-900 text-white min-h-screen flex flex-col">
-      <div className="p-5 text-lg font-bold border-b border-gray-700">
-        Club Menembak
+    <aside className="w-60 min-h-screen flex flex-col bg-[#0a0e27]">
+      {/* Brand */}
+      <div className="p-5 border-b border-[#1e2547]">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-lg grid place-items-center text-white font-bold text-lg bg-gradient-to-br from-[#ff5e3a] to-[#ff8a3a]">
+            ◎
+          </div>
+          <span className="font-display text-lg font-bold text-white uppercase tracking-wide">
+            Perbakin Club
+          </span>
+        </div>
       </div>
 
+      {/* Beranda + menu berizin */}
       <nav className="flex-1 p-3 space-y-1">
-        {menus.map((menu) => (
-          <Link
-            key={menu.key}
-            href={MENU_PATHS[menu.key] ?? '/dashboard'}
-            className="block px-3 py-2 rounded-lg hover:bg-gray-700 transition-colors"
-          >
-            {menu.label}
-          </Link>
-        ))}
+        <SidebarNavLink href="/dashboard" icon={LayoutDashboard} label="Beranda" exact />
+        {menus.map((menu) => {
+          const cfg = MENU_CONFIG[menu.key]
+          if (!cfg) return null
+          return (
+            <SidebarNavLink
+              key={menu.key}
+              href={cfg.path}
+              icon={cfg.icon}
+              label={menu.label}
+            />
+          )
+        })}
       </nav>
 
-      <div className="p-4 border-t border-gray-700">
+      {/* Logout */}
+      <div className="p-4 border-t border-[#1e2547]">
         <LogoutButton />
       </div>
     </aside>

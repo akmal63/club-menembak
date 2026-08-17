@@ -20,7 +20,7 @@ export default async function PublicHomePage() {
   const supabase = await createClient()
   const c = await getSiteContent()
 
-  // Galeri (maks 8 foto terbaru) & berita/kegiatan (maks 3 terbaru)
+  // Galeri (maks 8 foto terbaru) & berita aktif (maks 3 terbaru)
   const [{ data: photos }, { data: news }] = await Promise.all([
     supabase
       .from('gallery')
@@ -28,9 +28,10 @@ export default async function PublicHomePage() {
       .order('created_at', { ascending: false })
       .limit(8),
     supabase
-      .from('events')
-      .select('id, title, description, start_date, location, banner_url')
-      .order('start_date', { ascending: false })
+      .from('news')
+      .select('id, title, slug, excerpt, image_url, published_at')
+      .eq('is_active', true)
+      .order('published_at', { ascending: false })
       .limit(3),
   ])
 
@@ -181,56 +182,67 @@ export default async function PublicHomePage() {
         </div>
       </section>
 
-      {/* ===== BERITA / KEGIATAN ===== */}
+      {/* ===== BERITA ===== */}
       <section id="berita" className="py-20 bg-[#f4f5fa]">
         <div className="max-w-6xl mx-auto px-5">
           <SectionEyebrow>Informasi</SectionEyebrow>
-          <SectionTitle>Berita &amp; Kegiatan</SectionTitle>
+          <SectionTitle>Berita Terbaru</SectionTitle>
 
           {!news || news.length === 0 ? (
             <p className="text-center text-[#8890b5] mt-8">
-              Belum ada kegiatan. Kegiatan yang dibuat lewat dashboard akan tampil di sini.
+              Belum ada berita. Berita yang diterbitkan lewat dashboard akan tampil di sini.
             </p>
           ) : (
-            <div className="grid md:grid-cols-3 gap-6 mt-8">
-              {news.map((n) => (
-                <article
-                  key={n.id}
-                  className="bg-white rounded-xl overflow-hidden shadow-[0_4px_14px_rgba(10,14,39,0.06)]"
-                >
-                  {n.banner_url ? (
-                    <div className="relative aspect-video">
-                      <Image
-                        src={n.banner_url}
-                        alt={n.title}
-                        fill
-                        sizes="(max-width: 768px) 100vw, 33vw"
-                        className="object-cover"
-                      />
-                    </div>
-                  ) : (
-                    <div className="aspect-video bg-gradient-to-br from-[#0a0e27] to-[#151b3d] grid place-items-center">
-                      <Target className="w-12 h-12 text-[#ff5e3a]/40" />
-                    </div>
-                  )}
-                  <div className="p-5">
-                    <div className="flex items-center gap-2 text-xs text-[#8890b5] mb-2">
-                      <Calendar className="w-3.5 h-3.5" />
-                      {formatDate(n.start_date)}
-                      {n.location ? ` · ${n.location}` : ''}
-                    </div>
-                    <h3 className="font-display text-lg font-bold uppercase tracking-wide text-[#0a0e27] mb-2 leading-snug">
-                      {n.title}
-                    </h3>
-                    {n.description && (
-                      <p className="text-sm text-[#3a3f5c] line-clamp-3">
-                        {n.description}
-                      </p>
+            <>
+              <div className="grid md:grid-cols-3 gap-6 mt-8">
+                {news.map((n) => (
+                  <Link
+                    key={n.id}
+                    href={`/berita/${n.slug}`}
+                    className="bg-white rounded-xl overflow-hidden shadow-[0_4px_14px_rgba(10,14,39,0.06)] hover:shadow-lg transition-shadow group"
+                  >
+                    {n.image_url ? (
+                      <div className="relative aspect-video">
+                        <Image
+                          src={n.image_url}
+                          alt={n.title}
+                          fill
+                          sizes="(max-width: 768px) 100vw, 33vw"
+                          className="object-cover group-hover:scale-105 transition-transform"
+                        />
+                      </div>
+                    ) : (
+                      <div className="aspect-video bg-gradient-to-br from-[#0a0e27] to-[#151b3d] grid place-items-center">
+                        <Target className="w-12 h-12 text-[#ff5e3a]/40" />
+                      </div>
                     )}
-                  </div>
-                </article>
-              ))}
-            </div>
+                    <div className="p-5">
+                      <div className="flex items-center gap-2 text-xs text-[#8890b5] mb-2">
+                        <Calendar className="w-3.5 h-3.5" />
+                        {formatDate(n.published_at)}
+                      </div>
+                      <h3 className="font-display text-lg font-bold uppercase tracking-wide text-[#0a0e27] mb-2 leading-snug">
+                        {n.title}
+                      </h3>
+                      {n.excerpt && (
+                        <p className="text-sm text-[#3a3f5c] line-clamp-3">
+                          {n.excerpt}
+                        </p>
+                      )}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+
+              <div className="text-center mt-8">
+                <Link
+                  href="/berita"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-display font-semibold uppercase tracking-wide text-white bg-gradient-to-br from-[#ff5e3a] to-[#ff8a3a] hover:opacity-90 transition-opacity"
+                >
+                  Lihat Semua Berita <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </>
           )}
         </div>
       </section>
