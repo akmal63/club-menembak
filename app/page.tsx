@@ -12,12 +12,13 @@ import {
   Calendar,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
-import { siteContent as c } from '@/lib/site-content'
+import { getSiteContent } from '@/lib/site-content'
 import { formatDate } from '@/lib/format'
 import PublicNavbar from '@/components/public/public-navbar'
 
 export default async function PublicHomePage() {
   const supabase = await createClient()
+  const c = await getSiteContent()
 
   // Galeri (maks 8 foto terbaru) & berita/kegiatan (maks 3 terbaru)
   const [{ data: photos }, { data: news }] = await Promise.all([
@@ -35,7 +36,7 @@ export default async function PublicHomePage() {
 
   return (
     <div className="bg-white">
-      <PublicNavbar />
+      <PublicNavbar clubName={c.clubName} />
 
       {/* ===== HERO ===== */}
       <section

@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { Menu, X } from 'lucide-react'
-import { siteContent } from '@/lib/site-content'
 
 const LINKS = [
   { href: '#beranda', label: 'Beranda' },
@@ -14,7 +13,7 @@ const LINKS = [
   { href: '#kontak', label: 'Kontak' },
 ]
 
-export default function PublicNavbar() {
+export default function PublicNavbar({ clubName }: { clubName: string }) {
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
 
@@ -38,7 +37,7 @@ export default function PublicNavbar() {
             ◎
           </div>
           <span className="font-display text-lg font-bold text-white uppercase tracking-wide hidden sm:block">
-            {siteContent.clubName}
+            {clubName}
           </span>
         </a>
 
