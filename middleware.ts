@@ -27,12 +27,12 @@ export async function middleware(request: NextRequest) {
 
   const path = request.nextUrl.pathname
 
-  // Belum login tapi mau buka dashboard → lempar ke login
+  // Belum login tapi mau buka dashboard -> lempar ke login
   if (!user && path.startsWith('/dashboard')) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // Sudah login tapi buka halaman login → lempar ke dashboard
+  // Sudah login tapi buka login -> lempar ke dashboard
   if (user && path === '/login') {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
