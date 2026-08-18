@@ -2,9 +2,8 @@
 
 import { useActionState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
-import { useState } from 'react'
 import type { NewsState } from '@/app/dashboard/news/actions'
+import ImageInput from '@/components/image-input'
 
 type News = {
   title?: string | null
@@ -23,12 +22,6 @@ type Props = {
 
 export default function NewsForm({ action, initial, submitLabel }: Props) {
   const [state, formAction, pending] = useActionState(action, null)
-  const [preview, setPreview] = useState<string | null>(initial?.image_url ?? null)
-
-  function onPick(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0]
-    if (f) setPreview(URL.createObjectURL(f))
-  }
 
   return (
     <form action={formAction} className="space-y-4 max-w-2xl">
@@ -100,21 +93,11 @@ export default function NewsForm({ action, initial, submitLabel }: Props) {
 
       <div>
         <label className="block text-sm font-medium mb-1">Gambar</label>
-        {preview && (
-          <div className="relative w-48 h-32 mb-2 rounded-lg overflow-hidden border">
-            <Image src={preview} alt="Pratinjau" fill className="object-cover" />
-          </div>
-        )}
-        <input
-          type="file"
+        <ImageInput
           name="image"
-          accept="image/*"
-          onChange={onPick}
-          className="w-full border rounded-lg px-3 py-2 bg-white"
+          initialPreview={initial?.image_url ?? null}
+          hint={initial ? 'Kosongkan jika tidak ingin mengganti gambar.' : undefined}
         />
-        <p className="text-xs text-gray-500 mt-1">
-          Maks 5 MB. {initial ? 'Kosongkan jika tidak ingin mengganti gambar.' : ''}
-        </p>
       </div>
 
       <div className="flex gap-3">

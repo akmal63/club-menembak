@@ -33,15 +33,16 @@ export async function updateSiteContent(
     data: { user },
   } = await supabase.auth.getUser()
 
-  // ----- Susun ulang objek konten dari form -----
+  // Ambil konten lama agar field yang tak ada di form ini tidak terhapus
+  // (hero, visi-misi, federasi kini dikelola sebagai blok, bukan di sini)
+  const { data: existing } = await supabase
+    .from('site_settings')
+    .select('value')
+    .eq('key', SITE_CONTENT_KEY)
+    .single()
+  const prev = (existing?.value ?? {}) as Partial<SiteContent>
 
-  // Federasi: field berulang federation_abbr_0.., federation_name_0..
-  const federations: SiteContent['federations'] = []
-  for (let i = 0; i < 8; i++) {
-    const abbr = s(formData, `federation_abbr_${i}`)
-    const name = s(formData, `federation_name_${i}`)
-    if (abbr || name) federations.push({ abbr, name })
-  }
+  // ----- Susun ulang objek konten dari form -----
 
   // Legalitas
   const legal: SiteContent['about']['legal'] = []
@@ -70,24 +71,16 @@ export async function updateSiteContent(
     clubShort: s(formData, 'clubShort') || defaultContent.clubShort,
     tagline: s(formData, 'tagline'),
     location: s(formData, 'location'),
-    hero: {
-      welcome: s(formData, 'hero_welcome'),
-      title: s(formData, 'hero_title'),
-      highlight: s(formData, 'hero_highlight'),
-      subtitle: s(formData, 'hero_subtitle'),
-    },
+    // Hero & vision & federations: pertahankan nilai lama (dikelola via blok)
+    hero: prev.hero ?? defaultContent.hero,
+    vision: prev.vision ?? defaultContent.vision,
+    federations: prev.federations ?? defaultContent.federations,
     about: {
-      heading: s(formData, 'about_heading') || 'Tentang Kami',
-      body: s(formData, 'about_body'),
+      heading: prev.about?.heading ?? defaultContent.about.heading,
+      body: prev.about?.body ?? defaultContent.about.body,
       legal: legal.length ? legal : defaultContent.about.legal,
       chairman: s(formData, 'about_chairman'),
     },
-    vision: {
-      visi: s(formData, 'vision_visi'),
-      misi: s(formData, 'vision_misi'),
-      nilai: s(formData, 'vision_nilai'),
-    },
-    federations: federations.length ? federations : defaultContent.federations,
     contact: {
       address: s(formData, 'contact_address'),
       email: s(formData, 'contact_email'),

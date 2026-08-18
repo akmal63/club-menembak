@@ -22,10 +22,35 @@ function parseForm(formData: FormData) {
     address: get('address'),
     birth_date: get('birth_date'),
     join_date: get('join_date'),
+    active_until: get('active_until'),
+    position: get('position'),
+    occupation: get('occupation'),
     category: get('category'),
     status: get('status') ?? 'active',
     notes: get('notes'),
   }
+}
+
+// Upload pas foto ke bucket 'members', kembalikan URL publik
+async function uploadPhoto(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  file: File | null
+): Promise<{ url: string | null; error?: string }> {
+  if (!file || file.size === 0) return { url: null }
+  if (!file.type.startsWith('image/')) return { url: null, error: 'Foto harus berupa gambar.' }
+  if (file.size > 5 * 1024 * 1024) return { url: null, error: 'Foto maksimal 5 MB.' }
+
+  const ext = file.name.split('.').pop() ?? 'jpg'
+  const name = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
+  const { error } = await supabase.storage
+    .from('members')
+    .upload(name, file, { contentType: file.type })
+  if (error) return { url: null, error: `Gagal upload foto: ${error.message}` }
+
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from('members').getPublicUrl(name)
+  return { url: publicUrl }
 }
 
 // ---------- TAMBAH ANGGOTA ----------
@@ -44,13 +69,16 @@ export async function createMember(
     data: { user },
   } = await supabase.auth.getUser()
 
+  const photo = await uploadPhoto(supabase, formData.get('photo') as File | null)
+  if (photo.error) return { error: photo.error }
+
   const { error } = await supabase
     .from('members')
-    .insert({ ...data, created_by: user?.id })
+    .insert({ ...data, photo_url: photo.url, created_by: user?.id })
 
   if (error) {
     if (error.code === '23505') {
-      return { error: 'Nomor anggota sudah dipakai. Gunakan nomor lain.' }
+      return { error: 'No Registrasi sudah dipakai. Gunakan nomor lain.' }
     }
     return { error: error.message }
   }
@@ -72,14 +100,25 @@ export async function updateMember(
   if (!data.full_name) return { error: 'Nama lengkap wajib diisi.' }
 
   const supabase = await createClient()
-  const { error } = await supabase
-    .from('members')
-    .update({ ...data, updated_at: new Date().toISOString() })
-    .eq('id', id)
+
+  const updates: Record<string, unknown> = {
+    ...data,
+    updated_at: new Date().toISOString(),
+  }
+
+  // Ganti foto hanya jika ada file baru
+  const file = formData.get('photo') as File | null
+  if (file && file.size > 0) {
+    const photo = await uploadPhoto(supabase, file)
+    if (photo.error) return { error: photo.error }
+    updates.photo_url = photo.url
+  }
+
+  const { error } = await supabase.from('members').update(updates).eq('id', id)
 
   if (error) {
     if (error.code === '23505') {
-      return { error: 'Nomor anggota sudah dipakai. Gunakan nomor lain.' }
+      return { error: 'No Registrasi sudah dipakai. Gunakan nomor lain.' }
     }
     return { error: error.message }
   }

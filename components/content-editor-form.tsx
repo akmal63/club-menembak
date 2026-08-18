@@ -30,20 +30,8 @@ export default function ContentEditorForm({ initial }: { initial: SiteContent })
         </Grid>
       </Section>
 
-      {/* ===== HERO ===== */}
-      <Section title="Bagian Hero (paling atas)">
-        <Grid>
-          <Field label="Teks Sambutan" name="hero_welcome" defaultValue={initial.hero.welcome} />
-          <Field label="Judul" name="hero_title" defaultValue={initial.hero.title} />
-        </Grid>
-        <Field label="Judul Sorotan (berwarna)" name="hero_highlight" defaultValue={initial.hero.highlight} />
-        <Area label="Subjudul" name="hero_subtitle" defaultValue={initial.hero.subtitle} />
-      </Section>
-
-      {/* ===== TENTANG ===== */}
-      <Section title="Tentang Kami">
-        <Field label="Judul Bagian" name="about_heading" defaultValue={initial.about.heading} />
-        <Area label="Isi / Deskripsi" name="about_body" defaultValue={initial.about.body} rows={4} />
+      {/* ===== TENTANG: Jabatan Ketua + Legalitas ===== */}
+      <Section title="Legalitas & Ketua">
         <Field label="Jabatan Ketua" name="about_chairman" defaultValue={initial.about.chairman} />
 
         <SubLabel>Legalitas (SKEP, dll)</SubLabel>
@@ -58,32 +46,6 @@ export default function ContentEditorForm({ initial }: { initial: SiteContent })
               label={`Nomor ${i + 1}`}
               name={`legal_value_${i}`}
               defaultValue={initial.about.legal[i]?.value ?? ''}
-            />
-          </Grid>
-        ))}
-      </Section>
-
-      {/* ===== VISI MISI ===== */}
-      <Section title="Visi, Misi & Nilai">
-        <Area label="Visi" name="vision_visi" defaultValue={initial.vision.visi} />
-        <Area label="Misi" name="vision_misi" defaultValue={initial.vision.misi} />
-        <Area label="Nilai" name="vision_nilai" defaultValue={initial.vision.nilai} />
-      </Section>
-
-      {/* ===== FEDERASI ===== */}
-      <Section title="Afiliasi / Federasi">
-        <SubLabel>Isi hingga 4 federasi. Kosongkan jika tidak dipakai.</SubLabel>
-        {[0, 1, 2, 3].map((i) => (
-          <Grid key={i}>
-            <Field
-              label={`Singkatan ${i + 1}`}
-              name={`federation_abbr_${i}`}
-              defaultValue={initial.federations[i]?.abbr ?? ''}
-            />
-            <Field
-              label={`Nama Lengkap ${i + 1}`}
-              name={`federation_name_${i}`}
-              defaultValue={initial.federations[i]?.name ?? ''}
             />
           </Grid>
         ))}

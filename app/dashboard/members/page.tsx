@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
 import { checkPermission } from '@/lib/permissions'
 import DeleteMemberButton from '@/components/delete-member-button'
@@ -39,10 +40,10 @@ export default async function MembersPage() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-left">
               <tr>
-                <th className="px-4 py-3 font-medium">No. Anggota</th>
+                <th className="px-4 py-3 font-medium">Foto</th>
+                <th className="px-4 py-3 font-medium">No Registrasi</th>
                 <th className="px-4 py-3 font-medium">Nama</th>
-                <th className="px-4 py-3 font-medium">Kategori</th>
-                <th className="px-4 py-3 font-medium">Telepon</th>
+                <th className="px-4 py-3 font-medium">Jabatan</th>
                 <th className="px-4 py-3 font-medium">Status</th>
                 {(canEdit || canDelete) && (
                   <th className="px-4 py-3 font-medium text-right">Aksi</th>
@@ -52,6 +53,19 @@ export default async function MembersPage() {
             <tbody>
               {members.map((m) => (
                 <tr key={m.id} className="border-t hover:bg-gray-50">
+                  <td className="px-4 py-3">
+                    <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-100 shrink-0">
+                      {m.photo_url && (
+                        <Image
+                          src={m.photo_url}
+                          alt=""
+                          fill
+                          sizes="40px"
+                          className="object-cover"
+                        />
+                      )}
+                    </div>
+                  </td>
                   <td className="px-4 py-3">{m.member_number ?? '-'}</td>
                   <td className="px-4 py-3 font-medium">
                     <Link
@@ -61,8 +75,7 @@ export default async function MembersPage() {
                       {m.full_name}
                     </Link>
                   </td>
-                  <td className="px-4 py-3 capitalize">{m.category ?? '-'}</td>
-                  <td className="px-4 py-3">{m.phone ?? '-'}</td>
+                  <td className="px-4 py-3">{m.position ?? '-'}</td>
                   <td className="px-4 py-3">
                     <span
                       className={

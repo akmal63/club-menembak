@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { checkPermission } from '@/lib/permissions'
@@ -43,16 +44,29 @@ export default async function MemberDetailPage({
       <div className="bg-white rounded-xl shadow border overflow-hidden max-w-3xl">
         {/* Header profil */}
         <div className="bg-gray-900 text-white p-6 flex items-center gap-5">
-          <div className="w-20 h-20 rounded-full bg-gray-700 flex items-center justify-center text-2xl font-bold shrink-0">
-            {member.full_name?.charAt(0).toUpperCase() ?? '?'}
+          <div className="relative w-20 h-20 rounded-full bg-gray-700 overflow-hidden flex items-center justify-center text-2xl font-bold shrink-0">
+            {member.photo_url ? (
+              <Image
+                src={member.photo_url}
+                alt={member.full_name ?? ''}
+                fill
+                sizes="80px"
+                className="object-cover"
+              />
+            ) : (
+              (member.full_name?.charAt(0).toUpperCase() ?? '?')
+            )}
           </div>
           <div>
             <h1 className="text-2xl font-bold">{member.full_name}</h1>
             <p className="text-gray-300">
               {member.member_number
-                ? `No. ${member.member_number}`
-                : 'Tanpa nomor anggota'}
+                ? `No. Registrasi: ${member.member_number}`
+                : 'Tanpa no registrasi'}
             </p>
+            {member.position && (
+              <p className="text-gray-300 text-sm">{member.position}</p>
+            )}
             <span
               className={
                 member.status === 'active'
@@ -67,6 +81,8 @@ export default async function MemberDetailPage({
 
         {/* Detail */}
         <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+          <Detail label="Jabatan" value={member.position} />
+          <Detail label="Pekerjaan" value={member.occupation} />
           <Detail label="Email" value={member.email} />
           <Detail label="Telepon" value={member.phone} />
           <Detail
@@ -75,7 +91,8 @@ export default async function MemberDetailPage({
           />
           <Detail label="Tanggal Lahir" value={formatDate(member.birth_date)} />
           <Detail label="Tanggal Bergabung" value={formatDate(member.join_date)} />
-          <Detail label="Alamat" value={member.address} full />
+          <Detail label="Masa Aktif s/d" value={formatDate(member.active_until)} />
+          <Detail label="Alamat / Domisili" value={member.address} full />
           <Detail label="Catatan" value={member.notes} full />
         </div>
 

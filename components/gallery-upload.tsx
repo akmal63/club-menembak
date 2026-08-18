@@ -3,6 +3,7 @@
 import { useActionState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { uploadPhoto } from '@/app/dashboard/gallery/actions'
+import ImageInput from '@/components/image-input'
 
 export default function GalleryUpload() {
   const [state, formAction, pending] = useActionState(uploadPhoto, null)
@@ -48,13 +49,7 @@ export default function GalleryUpload() {
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">File Gambar *</label>
-          <input
-            type="file"
-            name="file"
-            accept="image/*"
-            required
-            className="w-full border rounded-lg px-3 py-2 bg-white"
-          />
+          <ImageInput name="file" />
         </div>
       </div>
 

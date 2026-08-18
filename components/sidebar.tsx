@@ -1,26 +1,16 @@
-import {
-  LayoutDashboard,
-  Users,
-  CalendarClock,
-  Star,
-  Newspaper,
-  Image as ImageIcon,
-  Settings,
-} from 'lucide-react'
 import { getUserPermissions } from '@/lib/permissions'
 import LogoutButton from './logout-button'
 import SidebarNavLink from './sidebar-nav-link'
 
-const MENU_CONFIG: Record<
-  string,
-  { path: string; icon: React.ComponentType<{ className?: string }> }
-> = {
-  members: { path: '/dashboard/members', icon: Users },
-  schedules: { path: '/dashboard/schedules', icon: CalendarClock },
-  events: { path: '/dashboard/events', icon: Star },
-  news: { path: '/dashboard/news', icon: Newspaper },
-  gallery: { path: '/dashboard/gallery', icon: ImageIcon },
-  settings: { path: '/dashboard/settings', icon: Settings },
+// Peta menu_key -> path
+const MENU_PATHS: Record<string, string> = {
+  members: '/dashboard/members',
+  schedules: '/dashboard/schedules',
+  events: '/dashboard/events',
+  news: '/dashboard/news',
+  gallery: '/dashboard/gallery',
+  content: '/dashboard/content',
+  settings: '/dashboard/settings',
 }
 
 export default async function Sidebar() {
@@ -51,15 +41,15 @@ export default async function Sidebar() {
 
       {/* Beranda + menu berizin */}
       <nav className="flex-1 p-3 space-y-1">
-        <SidebarNavLink href="/dashboard" icon={LayoutDashboard} label="Beranda" exact />
+        <SidebarNavLink href="/dashboard" iconKey="dashboard" label="Beranda" exact />
         {menus.map((menu) => {
-          const cfg = MENU_CONFIG[menu.key]
-          if (!cfg) return null
+          const path = MENU_PATHS[menu.key]
+          if (!path) return null
           return (
             <SidebarNavLink
               key={menu.key}
-              href={cfg.path}
-              icon={cfg.icon}
+              href={path}
+              iconKey={menu.key}
               label={menu.label}
             />
           )

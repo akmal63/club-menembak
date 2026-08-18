@@ -56,22 +56,41 @@ export default async function SettingsPage() {
 
   return (
     <div>
-      {/* ================= KONTEN BERANDA ================= */}
-      <div className="bg-gradient-to-br from-[#0a0e27] to-[#151b3d] rounded-xl p-6 mb-8 flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <h2 className="font-display text-xl font-bold uppercase tracking-wide text-white mb-1">
-            Konten Beranda Publik
-          </h2>
-          <p className="text-[#8890b5] text-sm">
-            Ubah teks yang tampil di halaman publik: identitas, hero, tentang, visi-misi, kontak, dan partner.
-          </p>
+      {/* ================= PINTASAN KONTEN ================= */}
+      <div className="grid md:grid-cols-2 gap-4 mb-8">
+        <div className="bg-gradient-to-br from-[#0a0e27] to-[#151b3d] rounded-xl p-6 flex flex-col justify-between gap-4">
+          <div>
+            <h2 className="font-display text-lg font-bold uppercase tracking-wide text-white mb-1">
+              Susun Beranda
+            </h2>
+            <p className="text-[#8890b5] text-sm">
+              Tambah, urutkan, aktif/nonaktifkan blok beranda (hero, teks, gambar, kartu, CTA, galeri, berita).
+            </p>
+          </div>
+          <Link
+            href="/dashboard/content"
+            className="bg-[#ff5e3a] text-white px-5 py-2.5 rounded-lg hover:opacity-90 font-display font-semibold uppercase tracking-wide text-sm text-center"
+          >
+            Kelola Blok →
+          </Link>
         </div>
-        <Link
-          href="/dashboard/settings/konten"
-          className="bg-[#ff5e3a] text-white px-5 py-2.5 rounded-lg hover:opacity-90 font-display font-semibold uppercase tracking-wide text-sm whitespace-nowrap"
-        >
-          Edit Konten →
-        </Link>
+
+        <div className="bg-gradient-to-br from-[#0a0e27] to-[#151b3d] rounded-xl p-6 flex flex-col justify-between gap-4">
+          <div>
+            <h2 className="font-display text-lg font-bold uppercase tracking-wide text-white mb-1">
+              Identitas &amp; Footer
+            </h2>
+            <p className="text-[#8890b5] text-sm">
+              Ubah nama club, kontak, alamat, dan tautan partner yang tampil di navbar &amp; footer.
+            </p>
+          </div>
+          <Link
+            href="/dashboard/settings/konten"
+            className="bg-white/10 text-white px-5 py-2.5 rounded-lg hover:bg-white/20 font-display font-semibold uppercase tracking-wide text-sm text-center border border-white/20"
+          >
+            Edit Identitas →
+          </Link>
+        </div>
       </div>
 
       {/* ================= MANAJEMEN AKUN ================= */}

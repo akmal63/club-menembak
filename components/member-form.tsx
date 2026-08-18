@@ -3,6 +3,7 @@
 import { useActionState } from 'react'
 import Link from 'next/link'
 import type { ActionState } from '@/app/dashboard/members/actions'
+import ImageInput from '@/components/image-input'
 
 type Member = {
   id?: string
@@ -13,8 +14,12 @@ type Member = {
   address?: string | null
   birth_date?: string | null
   join_date?: string | null
+  active_until?: string | null
+  position?: string | null
+  occupation?: string | null
   category?: string | null
   status?: string | null
+  photo_url?: string | null
   notes?: string | null
 }
 
@@ -35,13 +40,26 @@ export default function MemberForm({ action, initial, submitLabel }: Props) {
         </div>
       )}
 
+      {/* Pas Foto */}
+      <div>
+        <label className="block text-sm font-medium mb-1">Pas Foto (opsional)</label>
+        <ImageInput
+          name="photo"
+          initialPreview={initial?.photo_url ?? null}
+          hint={initial ? 'Kosongkan jika tidak ingin mengganti foto.' : 'Otomatis dikompres.'}
+        />
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Field label="Nama Lengkap *" name="full_name" defaultValue={initial?.full_name} required />
-        <Field label="Nomor Anggota" name="member_number" defaultValue={initial?.member_number} />
+        <Field label="No Registrasi" name="member_number" defaultValue={initial?.member_number} />
+        <Field label="Jabatan" name="position" defaultValue={initial?.position} />
+        <Field label="Pekerjaan" name="occupation" defaultValue={initial?.occupation} />
         <Field label="Email" name="email" type="email" defaultValue={initial?.email} />
         <Field label="Telepon" name="phone" defaultValue={initial?.phone} />
         <Field label="Tanggal Lahir" name="birth_date" type="date" defaultValue={initial?.birth_date} />
         <Field label="Tanggal Bergabung" name="join_date" type="date" defaultValue={initial?.join_date} />
+        <Field label="Masa Aktif s/d" name="active_until" type="date" defaultValue={initial?.active_until} />
 
         <div>
           <label className="block text-sm font-medium mb-1">Kategori</label>
