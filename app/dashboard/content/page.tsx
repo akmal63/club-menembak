@@ -37,13 +37,13 @@ export default async function ContentPage() {
           Konten Beranda
         </h1>
         <div className="flex gap-3">
-          <Link href="/" target="_blank" className="text-[#ff5e3a] text-sm font-medium hover:underline self-center">
+          <Link href="/" target="_blank" className="text-accent text-sm font-medium hover:underline self-center">
             Lihat beranda ↗
           </Link>
           {canEdit && (
             <Link
               href="/dashboard/content/new"
-              className="bg-[#ff5e3a] text-white px-4 py-2 rounded-lg hover:opacity-90 font-display font-semibold uppercase tracking-wide text-sm"
+              className="bg-accent text-white px-4 py-2 rounded-lg hover:opacity-90 font-display font-semibold uppercase tracking-wide text-sm"
             >
               + Tambah Blok
             </Link>
@@ -91,7 +91,7 @@ export default async function ContentPage() {
                 <div className="flex items-center gap-3">
                   <Link
                     href={`/dashboard/content/${b.id}`}
-                    className="text-[#ff5e3a] hover:underline text-sm"
+                    className="text-accent hover:underline text-sm"
                   >
                     Edit
                   </Link>

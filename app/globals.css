@@ -1,13 +1,20 @@
 @import "tailwindcss";
 
 :root {
-  /* ===== Tema Sporty & Energik ===== */
-  --navy: #0a0e27;          /* latar sidebar, teks utama */
-  --navy-soft: #151b3d;     /* hover di sidebar */
-  --orange: #ff5e3a;        /* aksen utama */
-  --orange-soft: #ff8a3a;   /* gradasi aksen */
-  --bg: #f4f5fa;            /* latar konten */
-  --muted: #8890b5;         /* teks sekunder */
+  /* ===== Tema Sporty & Energik =====
+     --brand-primary & --brand-accent DAPAT ditimpa dari database
+     lewat atribut style di <html> (lihat app/layout.tsx).
+     Nilai di sini hanya default bila DB belum mengatur. */
+  --brand-primary: #0a0e27;
+  --brand-accent: #ff5e3a;
+
+  /* Alias lama tetap dipertahankan, kini mengikuti brand */
+  --navy: var(--brand-primary);   /* latar sidebar, teks utama */
+  --navy-soft: #151b3d;           /* hover di sidebar */
+  --orange: var(--brand-accent);  /* aksen utama */
+  --orange-soft: #ff8a3a;         /* gradasi aksen */
+  --bg: #f4f5fa;                  /* latar konten */
+  --muted: #8890b5;               /* teks sekunder */
   --card: #ffffff;
 
   --background: var(--bg);
@@ -41,3 +48,15 @@ body {
 .font-display {
   font-family: var(--font-barlow), 'Inter', sans-serif;
 }
+
+/* ===== Utilitas warna brand (untuk migrasi bertahap) =====
+   Pakai kelas ini menggantikan hex hardcode agar ikut tema. */
+.bg-brand { background-color: var(--brand-primary); }
+.bg-accent { background-color: var(--brand-accent); }
+.text-brand { color: var(--brand-primary); }
+.text-accent { color: var(--brand-accent); }
+.border-accent { border-color: var(--brand-accent); }
+.grad-accent { background-image: linear-gradient(135deg, var(--brand-accent), var(--orange-soft)); }
+.ring-accent { --tw-ring-color: var(--brand-accent); }
+.bg-brand-soft { background-color: var(--navy-soft); }
+.grad-brand { background-image: linear-gradient(135deg, var(--brand-primary), var(--navy-soft)); }

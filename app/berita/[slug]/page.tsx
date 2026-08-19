@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getSiteContent } from '@/lib/site-content'
 import { formatDate } from '@/lib/format'
 import PublicNavbar from '@/components/public/public-navbar'
+import PublicFooter from '@/components/public/public-footer'
 
 export default async function BeritaDetailPage({
   params,
@@ -27,12 +28,12 @@ export default async function BeritaDetailPage({
 
   return (
     <div className="bg-white min-h-screen">
-      <PublicNavbar clubName={c.clubName} />
+      <PublicNavbar clubName={c.clubName} logoUrl={c.logoUrl} navMenu={c.navMenu} />
 
       <article className="max-w-3xl mx-auto px-5 pt-28 pb-20">
         <Link
           href="/berita"
-          className="inline-flex items-center gap-2 text-[#8890b5] hover:text-[#ff5e3a] text-sm mb-6"
+          className="inline-flex items-center gap-2 text-[#8890b5] hover:text-accent text-sm mb-6"
         >
           <ArrowLeft className="w-4 h-4" /> Semua berita
         </Link>
@@ -51,6 +52,7 @@ export default async function BeritaDetailPage({
               src={news.image_url}
               alt={news.title}
               fill
+              unoptimized
               sizes="(max-width:768px) 100vw, 768px"
               className="object-cover"
             />
@@ -67,6 +69,8 @@ export default async function BeritaDetailPage({
           </div>
         )}
       </article>
+
+      <PublicFooter content={c} />
     </div>
   )
 }

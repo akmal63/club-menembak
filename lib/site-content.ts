@@ -10,12 +10,19 @@ import { createClient } from './supabase/server'
 export type Federation = { abbr: string; name: string }
 export type Legal = { label: string; value: string }
 export type Partner = { label: string; url: string }
+export type NavItem = { label: string; url: string; enabled: boolean }
+export type NavLink = { label: string; href: string }
 
 export type SiteContent = {
   clubName: string
   clubShort: string
   tagline: string
   location: string
+  logoUrl: string // URL logo club (kosong = pakai ikon bawaan)
+  copyrightText: string // teks hak cipta footer (kosong = default otomatis)
+  theme: { primary: string; accent: string } // warna tema (hex)
+  navMenu: NavItem[] // menu navbar publik (kosong = pakai default)
+  identityText: { label: string; body: string } // teks bebas identitas (tampil di beranda via blok)
   hero: {
     welcome: string
     title: string
@@ -48,6 +55,19 @@ export const defaultContent: SiteContent = {
   clubShort: 'PSC',
   tagline: 'Perkumpulan Menembak',
   location: 'Shooting Range Makassar, Sulawesi Selatan',
+  logoUrl: '',
+  copyrightText: '',
+  theme: { primary: '#0a0e27', accent: '#ff5e3a' },
+  navMenu: [
+    { label: 'Beranda', url: '/#beranda', enabled: true },
+    { label: 'Tentang Kami', url: '/#tentang', enabled: true },
+    { label: 'Visi Misi', url: '/#visimisi', enabled: true },
+    { label: 'Galeri', url: '/#galeri', enabled: true },
+    { label: 'Berita', url: '/#berita', enabled: true },
+    { label: 'Database Anggota', url: '/anggota', enabled: true },
+    { label: 'Kontak', url: '/#kontak', enabled: true },
+  ],
+  identityText: { label: '', body: '' },
   hero: {
     welcome: 'Selamat Datang',
     title: 'Official Website',
@@ -92,6 +112,10 @@ export const defaultContent: SiteContent = {
 // Kunci baris di tabel site_settings
 export const SITE_CONTENT_KEY = 'home_content'
 
+// Preset tema dipindah ke lib/theme.ts (bebas import server).
+// Re-export agar import lama `from '@/lib/site-content'` tetap berfungsi.
+export { THEME_PRESETS, type ThemePreset } from './theme'
+
 // Baca konten dari database; jika belum ada, pakai default.
 // Menggabungkan agar field baru tetap terisi walau data lama belum punya.
 export async function getSiteContent(): Promise<SiteContent> {
@@ -109,6 +133,11 @@ export async function getSiteContent(): Promise<SiteContent> {
       return {
         ...defaultContent,
         ...v,
+        logoUrl: v.logoUrl ?? defaultContent.logoUrl,
+        copyrightText: v.copyrightText ?? defaultContent.copyrightText,
+        theme: { ...defaultContent.theme, ...v.theme },
+        navMenu: v.navMenu && v.navMenu.length ? v.navMenu : defaultContent.navMenu,
+        identityText: { ...defaultContent.identityText, ...v.identityText },
         hero: { ...defaultContent.hero, ...v.hero },
         about: { ...defaultContent.about, ...v.about },
         vision: { ...defaultContent.vision, ...v.vision },

@@ -1,14 +1,13 @@
 'use client'
 
-import { useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { ChevronUp, ChevronDown } from 'lucide-react'
-import {
-  deleteBlock,
-  toggleBlock,
-  moveBlock,
-} from '@/app/dashboard/content/actions'
+import { ChevronUp, ChevronDown, Eye, EyeOff } from 'lucide-react'
+import { deleteBlock, toggleBlock, moveBlock } from '@/app/dashboard/content/actions'
+import ConfirmDialog from '@/components/confirm-dialog'
+import { useToast } from '@/components/toast'
 
+// ===== Urutkan (naik/turun) =====
 export function MoveButtons({
   id,
   isFirst,
@@ -18,32 +17,31 @@ export function MoveButtons({
   isFirst: boolean
   isLast: boolean
 }) {
-  const [pending, start] = useTransition()
+  const [pending, startTransition] = useTransition()
   const router = useRouter()
-  const move = (dir: 'up' | 'down') =>
-    start(async () => {
-      try {
-        await moveBlock(id, dir)
-        router.refresh()
-      } catch (e) {
-        alert(e instanceof Error ? e.message : 'Gagal.')
-      }
+
+  function move(dir: 'up' | 'down') {
+    startTransition(async () => {
+      await moveBlock(id, dir)
+      router.refresh()
     })
+  }
+
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col gap-1">
       <button
         onClick={() => move('up')}
-        disabled={pending || isFirst}
-        className="text-[#8890b5] hover:text-[#0a0e27] disabled:opacity-20"
-        aria-label="Naik"
+        disabled={isFirst || pending}
+        className="text-[#8890b5] hover:text-[#0a0e27] disabled:opacity-30"
+        aria-label="Naikkan"
       >
         <ChevronUp className="w-4 h-4" />
       </button>
       <button
         onClick={() => move('down')}
-        disabled={pending || isLast}
-        className="text-[#8890b5] hover:text-[#0a0e27] disabled:opacity-20"
-        aria-label="Turun"
+        disabled={isLast || pending}
+        className="text-[#8890b5] hover:text-[#0a0e27] disabled:opacity-30"
+        aria-label="Turunkan"
       >
         <ChevronDown className="w-4 h-4" />
       </button>
@@ -51,54 +49,68 @@ export function MoveButtons({
   )
 }
 
+// ===== Aktif / Nonaktif =====
 export function ToggleBlockButton({ id, active }: { id: string; active: boolean }) {
-  const [pending, start] = useTransition()
+  const [pending, startTransition] = useTransition()
   const router = useRouter()
+
+  function toggle() {
+    startTransition(async () => {
+      await toggleBlock(id, !active)
+      router.refresh()
+    })
+  }
+
   return (
     <button
-      onClick={() =>
-        start(async () => {
-          try {
-            await toggleBlock(id, !active)
-            router.refresh()
-          } catch (e) {
-            alert(e instanceof Error ? e.message : 'Gagal.')
-          }
-        })
-      }
+      onClick={toggle}
       disabled={pending}
-      className={
-        'text-xs px-2 py-1 rounded font-medium disabled:opacity-50 ' +
-        (active
-          ? 'bg-green-50 text-green-700 hover:bg-green-100'
-          : 'bg-gray-100 text-gray-500 hover:bg-gray-200')
-      }
+      className="text-[#8890b5] hover:text-[#0a0e27] disabled:opacity-50 flex items-center gap-1.5 text-sm"
+      title={active ? 'Sedang tampil — klik untuk sembunyikan' : 'Tersembunyi — klik untuk tampilkan'}
     >
-      {pending ? '...' : active ? 'Aktif' : 'Nonaktif'}
+      {active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
     </button>
   )
 }
 
+// ===== Hapus blok =====
 export function DeleteBlockButton({ id, label }: { id: string; label: string }) {
-  const [pending, start] = useTransition()
+  const [open, setOpen] = useState(false)
+  const [pending, startTransition] = useTransition()
   const router = useRouter()
+  const { success, error } = useToast()
+
+  function handleConfirm() {
+    startTransition(async () => {
+      try {
+        await deleteBlock(id)
+        setOpen(false)
+        success('Terhapus', `Blok "${label}" berhasil dihapus.`)
+        router.refresh()
+      } catch (e) {
+        setOpen(false)
+        error('Gagal menghapus', e instanceof Error ? e.message : undefined)
+      }
+    })
+  }
+
   return (
-    <button
-      onClick={() => {
-        if (!confirm(`Hapus blok "${label}"? Tidak bisa dibatalkan.`)) return
-        start(async () => {
-          try {
-            await deleteBlock(id)
-            router.refresh()
-          } catch (e) {
-            alert(e instanceof Error ? e.message : 'Gagal.')
-          }
-        })
-      }}
-      disabled={pending}
-      className="text-red-600 hover:underline disabled:opacity-50 text-sm"
-    >
-      {pending ? '...' : 'Hapus'}
-    </button>
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        className="text-red-600 hover:underline text-sm"
+      >
+        Hapus
+      </button>
+      <ConfirmDialog
+        open={open}
+        title="Hapus Blok?"
+        message="Blok {x} akan dihapus dari beranda."
+        highlight={label}
+        loading={pending}
+        onConfirm={handleConfirm}
+        onCancel={() => setOpen(false)}
+      />
+    </>
   )
 }

@@ -5,6 +5,9 @@ export type MenuKey =
   | 'schedules'
   | 'events'
   | 'gallery'
+  | 'news'
+  | 'content'
+  | 'pages'
   | 'settings'
 export type Action = 'view' | 'create' | 'edit' | 'delete'
 

@@ -12,6 +12,8 @@ const TYPE_ORDER: BlockType[] = [
   'cards',
   'cta',
   'federations',
+  'legal',
+  'identity_club',
   'gallery',
   'news',
   'schedules',
@@ -50,7 +52,7 @@ export default async function NewBlockPage({
             <Link
               key={t}
               href={`/dashboard/content/new?type=${t}`}
-              className="bg-white border rounded-xl p-4 hover:border-[#ff5e3a] hover:shadow transition-all"
+              className="bg-white border rounded-xl p-4 hover:border-accent hover:shadow transition-all"
             >
               <span className="font-display font-bold uppercase tracking-wide text-[#0a0e27]">
                 {BLOCK_LABELS[t]}

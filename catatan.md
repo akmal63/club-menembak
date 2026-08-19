@@ -19,3 +19,8 @@ tambah admin:
 update public.profiles
 set role_id = (select id from public.roles where name = 'admin')
 where id = (select id from auth.users where email = 'email-anda@contoh.com');
+
+update aplikasi ke vercel:
+git add .
+git commit -m "Tambah halaman publik dan dashboard sporty"
+git push

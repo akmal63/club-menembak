@@ -11,6 +11,14 @@ export default async function PublicHomePage() {
 
   const nowIso = new Date().toISOString()
 
+  // Ambil foto ketua (anggota dengan jabatan 'Ketua') untuk blok legalitas
+  const { data: chairmanMember } = await supabase
+    .from('members_public')
+    .select('full_name, photo_url, position')
+    .ilike('position', 'ketua')
+    .limit(1)
+    .maybeSingle()
+
   // Ambil blok aktif (urut), galeri, berita, jadwal, kegiatan — sekaligus
   const [
     { data: blocks },
@@ -53,10 +61,10 @@ export default async function PublicHomePage() {
 
   return (
     <div className="bg-white">
-      <PublicNavbar clubName={c.clubName} />
+      <PublicNavbar clubName={c.clubName} logoUrl={c.logoUrl} navMenu={c.navMenu} />
 
       {list.length === 0 ? (
-        <div className="min-h-screen grid place-items-center bg-[#0a0e27] text-center px-5">
+        <div className="min-h-screen grid place-items-center bg-brand text-center px-5">
           <div>
             <h1 className="font-display text-3xl font-bold uppercase text-white mb-3">
               {c.clubName}
@@ -75,6 +83,9 @@ export default async function PublicHomePage() {
             news={news ?? []}
             schedules={schedules ?? []}
             events={events ?? []}
+            siteContent={c}
+            chairmanPhoto={chairmanMember?.photo_url ?? null}
+            chairmanName={chairmanMember?.full_name ?? null}
           />
         ))
       )}

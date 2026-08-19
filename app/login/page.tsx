@@ -2,15 +2,35 @@
 
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import Image from 'next/image'
+import { Eye, EyeOff } from 'lucide-react'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [logoUrl, setLogoUrl] = useState('')
+  const [clubName, setClubName] = useState('')
   const router = useRouter()
   const supabase = createClient()
+
+  // Ambil logo & nama club dari pengaturan identitas (baris publik)
+  useEffect(() => {
+    supabase
+      .from('site_settings')
+      .select('value')
+      .eq('key', 'home_content')
+      .single()
+      .then(({ data }) => {
+        const v = (data?.value ?? {}) as { logoUrl?: string; clubName?: string }
+        if (v.logoUrl) setLogoUrl(v.logoUrl)
+        if (v.clubName) setClubName(v.clubName)
+      })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
@@ -38,6 +58,24 @@ export default function LoginPage() {
         onSubmit={handleLogin}
         className="w-full max-w-md space-y-4 p-8 bg-white rounded-xl shadow"
       >
+        {/* Logo club */}
+        <div className="flex flex-col items-center gap-2">
+          {logoUrl ? (
+            <span className="relative w-16 h-16 rounded-xl overflow-hidden bg-white ring-1 ring-black/5 grid place-items-center">
+              <Image src={logoUrl} alt={clubName || 'Logo'} fill sizes="64px" className="object-contain" />
+            </span>
+          ) : (
+            <span className="w-16 h-16 rounded-xl grid place-items-center text-white font-bold text-2xl grad-accent">
+              ◎
+            </span>
+          )}
+          {clubName && (
+            <span className="font-display text-sm font-bold uppercase tracking-wide text-[#0a0e27] text-center">
+              {clubName}
+            </span>
+          )}
+        </div>
+
         <h1 className="text-2xl font-bold text-center">Masuk</h1>
 
         {error && <p className="text-red-500 text-sm">{error}</p>}
@@ -55,19 +93,30 @@ export default function LoginPage() {
 
         <div>
           <label className="block text-sm font-medium mb-1">Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="w-full border rounded-lg px-3 py-2"
-          />
+          <div className="relative">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="w-full border rounded-lg px-3 py-2 pr-10"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+              aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
+              title={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
+            >
+              {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+          className="w-full bg-accent text-white py-2 rounded-lg hover:opacity-90 disabled:opacity-50"
         >
           {loading ? 'Memproses...' : 'Masuk'}
         </button>

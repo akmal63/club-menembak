@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { updatePermissions } from './actions'
 import CreateAccountForm from '@/components/create-account-form'
 import DeleteAccountButton from '@/components/delete-account-button'
+import Tabs from '@/components/tabs'
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -54,47 +55,9 @@ export default async function SettingsPage() {
     data: { user: currentUser },
   } = await supabase.auth.getUser()
 
-  return (
+  // ===== Bagian: Manajemen Akun =====
+  const akunTab = (
     <div>
-      {/* ================= PINTASAN KONTEN ================= */}
-      <div className="grid md:grid-cols-2 gap-4 mb-8">
-        <div className="bg-gradient-to-br from-[#0a0e27] to-[#151b3d] rounded-xl p-6 flex flex-col justify-between gap-4">
-          <div>
-            <h2 className="font-display text-lg font-bold uppercase tracking-wide text-white mb-1">
-              Susun Beranda
-            </h2>
-            <p className="text-[#8890b5] text-sm">
-              Tambah, urutkan, aktif/nonaktifkan blok beranda (hero, teks, gambar, kartu, CTA, galeri, berita).
-            </p>
-          </div>
-          <Link
-            href="/dashboard/content"
-            className="bg-[#ff5e3a] text-white px-5 py-2.5 rounded-lg hover:opacity-90 font-display font-semibold uppercase tracking-wide text-sm text-center"
-          >
-            Kelola Blok →
-          </Link>
-        </div>
-
-        <div className="bg-gradient-to-br from-[#0a0e27] to-[#151b3d] rounded-xl p-6 flex flex-col justify-between gap-4">
-          <div>
-            <h2 className="font-display text-lg font-bold uppercase tracking-wide text-white mb-1">
-              Identitas &amp; Footer
-            </h2>
-            <p className="text-[#8890b5] text-sm">
-              Ubah nama club, kontak, alamat, dan tautan partner yang tampil di navbar &amp; footer.
-            </p>
-          </div>
-          <Link
-            href="/dashboard/settings/konten"
-            className="bg-white/10 text-white px-5 py-2.5 rounded-lg hover:bg-white/20 font-display font-semibold uppercase tracking-wide text-sm text-center border border-white/20"
-          >
-            Edit Identitas →
-          </Link>
-        </div>
-      </div>
-
-      {/* ================= MANAJEMEN AKUN ================= */}
-      <h1 className="text-2xl font-bold mb-2">Manajemen Akun</h1>
       <p className="text-gray-600 mb-4">
         Buat akun untuk pengurus (Admin atau Super Admin). Pendaftaran mandiri
         dinonaktifkan — hanya Super Admin yang dapat membuat akun.
@@ -104,7 +67,7 @@ export default async function SettingsPage() {
         <CreateAccountForm />
       </div>
 
-      <div className="bg-white rounded-xl shadow border overflow-hidden mb-10">
+      <div className="bg-white rounded-xl shadow border overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-left">
             <tr>
@@ -146,9 +109,12 @@ export default async function SettingsPage() {
           </tbody>
         </table>
       </div>
+    </div>
+  )
 
-      {/* ================= IZIN ADMIN ================= */}
-      <h1 className="text-2xl font-bold mb-2">Pengaturan Izin Admin</h1>
+  // ===== Bagian: Izin Admin =====
+  const izinTab = (
+    <div>
       <p className="text-gray-600 mb-6">
         Atur menu apa saja yang boleh diakses oleh <strong>Admin</strong>.
         Centang untuk memberi izin, hapus centang untuk mencabut.
@@ -184,7 +150,7 @@ export default async function SettingsPage() {
 
         <button
           type="submit"
-          className="mt-5 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+          className="mt-5 bg-accent text-white px-6 py-2 rounded-lg hover:opacity-90 font-display font-semibold uppercase tracking-wide"
         >
           Simpan Perubahan
         </button>
@@ -194,6 +160,59 @@ export default async function SettingsPage() {
         Catatan: perubahan berlaku setelah Admin memuat ulang halaman mereka.
         Izin Super Admin tidak dapat diubah (selalu penuh).
       </p>
+    </div>
+  )
+
+  return (
+    <div>
+      <h1 className="font-display text-2xl font-bold uppercase tracking-wide text-[#0a0e27] mb-6">
+        Pengaturan
+      </h1>
+
+      {/* ================= PINTASAN KONTEN ================= */}
+      <div className="grid md:grid-cols-2 gap-4 mb-8">
+        <div className="grad-brand rounded-xl p-6 flex flex-col justify-between gap-4">
+          <div>
+            <h2 className="font-display text-lg font-bold uppercase tracking-wide text-white mb-1">
+              Susun Beranda
+            </h2>
+            <p className="text-[#8890b5] text-sm">
+              Tambah, urutkan, aktif/nonaktifkan blok beranda (hero, teks, gambar, kartu, CTA, galeri, berita).
+            </p>
+          </div>
+          <Link
+            href="/dashboard/content"
+            className="bg-accent text-white px-5 py-2.5 rounded-lg hover:opacity-90 font-display font-semibold uppercase tracking-wide text-sm text-center"
+          >
+            Kelola Blok →
+          </Link>
+        </div>
+
+        <div className="grad-brand rounded-xl p-6 flex flex-col justify-between gap-4">
+          <div>
+            <h2 className="font-display text-lg font-bold uppercase tracking-wide text-white mb-1">
+              Identitas &amp; Footer
+            </h2>
+            <p className="text-[#8890b5] text-sm">
+              Ubah nama club, kontak, alamat, dan tautan partner yang tampil di navbar &amp; footer.
+            </p>
+          </div>
+          <Link
+            href="/dashboard/settings/konten"
+            className="bg-white/10 text-white px-5 py-2.5 rounded-lg hover:bg-white/20 font-display font-semibold uppercase tracking-wide text-sm text-center border border-white/20"
+          >
+            Edit Identitas →
+          </Link>
+        </div>
+      </div>
+
+      {/* ================= TAB: AKUN & IZIN ================= */}
+      <Tabs
+        tabs={[
+          { key: 'akun', label: 'Manajemen Akun', content: akunTab },
+          { key: 'izin', label: 'Izin Admin', content: izinTab },
+        ]}
+      />
     </div>
   )
 }
@@ -213,7 +232,7 @@ function Checkbox({
         type="checkbox"
         name={`perm-${pid}-${action}`}
         defaultChecked={checked}
-        className="w-4 h-4 accent-blue-600"
+        className="w-4 h-4 accent-[#ff5e3a]"
       />
     </td>
   )

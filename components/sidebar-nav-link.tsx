@@ -10,6 +10,7 @@ import {
   Newspaper,
   Image as ImageIcon,
   LayoutTemplate,
+  FileText,
   Settings,
 } from 'lucide-react'
 
@@ -21,6 +22,7 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   news: Newspaper,
   gallery: ImageIcon,
   content: LayoutTemplate,
+  pages: FileText,
   settings: Settings,
 }
 
@@ -45,7 +47,7 @@ export default function SidebarNavLink({
       className={
         'flex items-center gap-3 px-3 py-2.5 rounded-lg font-display font-semibold uppercase tracking-wide text-sm transition-colors ' +
         (active
-          ? 'bg-gradient-to-br from-[#ff5e3a] to-[#ff8a3a] text-white'
+          ? 'grad-accent text-white'
           : 'text-[#8890b5] hover:bg-[#151b3d] hover:text-white')
       }
     >

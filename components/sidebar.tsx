@@ -1,4 +1,6 @@
+import Image from 'next/image'
 import { getUserPermissions } from '@/lib/permissions'
+import { getSiteContent } from '@/lib/site-content'
 import LogoutButton from './logout-button'
 import SidebarNavLink from './sidebar-nav-link'
 
@@ -10,11 +12,13 @@ const MENU_PATHS: Record<string, string> = {
   news: '/dashboard/news',
   gallery: '/dashboard/gallery',
   content: '/dashboard/content',
+  pages: '/dashboard/pages',
   settings: '/dashboard/settings',
 }
 
 export default async function Sidebar() {
   const permissions = await getUserPermissions()
+  const c = await getSiteContent()
 
   const menus = (permissions ?? [])
     .filter((p) => p.can_view && p.permissions)
@@ -26,15 +30,21 @@ export default async function Sidebar() {
     .sort((a, b) => a.sort - b.sort)
 
   return (
-    <aside className="w-60 min-h-screen flex flex-col bg-[#0a0e27]">
+    <aside className="w-60 min-h-screen flex flex-col bg-brand">
       {/* Brand */}
       <div className="p-5 border-b border-[#1e2547]">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-lg grid place-items-center text-white font-bold text-lg bg-gradient-to-br from-[#ff5e3a] to-[#ff8a3a]">
-            ◎
-          </div>
+          {c.logoUrl ? (
+            <span className="relative w-9 h-9 rounded-lg overflow-hidden bg-white grid place-items-center shrink-0">
+              <Image src={c.logoUrl} alt={c.clubName} fill sizes="36px" className="object-contain" />
+            </span>
+          ) : (
+            <span className="w-9 h-9 rounded-lg grid place-items-center text-white font-bold text-lg grad-accent">
+              ◎
+            </span>
+          )}
           <span className="font-display text-lg font-bold text-white uppercase tracking-wide">
-            Perbakin Club
+            {c.clubShort || c.clubName}
           </span>
         </div>
       </div>

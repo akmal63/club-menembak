@@ -1,8 +1,10 @@
 'use client'
 
-import { useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { deleteMember } from '@/app/dashboard/members/actions'
+import ConfirmDialog from '@/components/confirm-dialog'
+import { useToast } from '@/components/toast'
 
 export default function DeleteMemberButton({
   id,
@@ -11,30 +13,42 @@ export default function DeleteMemberButton({
   id: string
   name: string
 }) {
+  const [open, setOpen] = useState(false)
   const [pending, startTransition] = useTransition()
   const router = useRouter()
+  const { success, error } = useToast()
 
-  function handleDelete() {
-    if (!confirm(`Hapus anggota "${name}"? Tindakan ini tidak bisa dibatalkan.`)) {
-      return
-    }
+  function handleConfirm() {
     startTransition(async () => {
       try {
         await deleteMember(id)
+        setOpen(false)
+        success('Terhapus', `Anggota "${name}" berhasil dihapus.`)
         router.refresh()
       } catch (e) {
-        alert(e instanceof Error ? e.message : 'Gagal menghapus.')
+        setOpen(false)
+        error('Gagal menghapus', e instanceof Error ? e.message : undefined)
       }
     })
   }
 
   return (
-    <button
-      onClick={handleDelete}
-      disabled={pending}
-      className="text-red-600 hover:underline disabled:opacity-50"
-    >
-      {pending ? 'Menghapus...' : 'Hapus'}
-    </button>
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        className="text-red-600 hover:underline"
+      >
+        Hapus
+      </button>
+      <ConfirmDialog
+        open={open}
+        title="Hapus Anggota?"
+        message="Data {x} akan dihapus permanen. Tindakan ini tidak dapat dibatalkan."
+        highlight={name}
+        loading={pending}
+        onConfirm={handleConfirm}
+        onCancel={() => setOpen(false)}
+      />
+    </>
   )
 }

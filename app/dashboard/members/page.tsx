@@ -24,7 +24,7 @@ export default async function MembersPage() {
         {canCreate && (
           <Link
             href="/dashboard/members/new"
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+            className="bg-accent text-white px-4 py-2 rounded-lg hover:opacity-90"
           >
             + Tambah Anggota
           </Link>
@@ -54,15 +54,20 @@ export default async function MembersPage() {
               {members.map((m) => (
                 <tr key={m.id} className="border-t hover:bg-gray-50">
                   <td className="px-4 py-3">
-                    <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-100 shrink-0">
-                      {m.photo_url && (
+                    <div className="relative rounded-lg overflow-hidden bg-gray-100 grid place-items-center shrink-0" style={{ width: '60px', height: '80px' }}>
+                      {m.photo_url ? (
                         <Image
                           src={m.photo_url}
-                          alt=""
+                          alt={m.full_name ?? ''}
                           fill
-                          sizes="40px"
+                          unoptimized
+                          sizes="60px"
                           className="object-cover"
                         />
+                      ) : (
+                        <span className="text-gray-400 text-sm font-semibold uppercase">
+                          {(m.full_name ?? '?').charAt(0)}
+                        </span>
                       )}
                     </div>
                   </td>

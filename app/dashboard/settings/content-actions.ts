@@ -42,6 +42,29 @@ export async function updateSiteContent(
     .single()
   const prev = (existing?.value ?? {}) as Partial<SiteContent>
 
+  // ----- Upload logo (opsional) -----
+  // Logo lama dari hidden input; dipakai bila tidak ada file baru.
+  let logoUrl = s(formData, 'logo_existing') || prev.logoUrl || ''
+
+  // Jika ditandai hapus, kosongkan URL logo.
+  if (s(formData, 'logo_remove') === '1') {
+    logoUrl = ''
+  }
+
+  const logoFile = formData.get('logo')
+  if (logoFile instanceof File && logoFile.size > 0) {
+    const ext = (logoFile.name.split('.').pop() || 'png').toLowerCase()
+    // Path tetap agar rapi; cache-busting via query saat dipakai
+    const path = `identity/logo-${Date.now()}.${ext}`
+    const { error: upErr } = await supabase.storage
+      .from('blocks')
+      .upload(path, logoFile, { upsert: true, contentType: logoFile.type })
+    if (upErr) return { error: 'Gagal mengunggah logo: ' + upErr.message }
+
+    const { data: pub } = supabase.storage.from('blocks').getPublicUrl(path)
+    logoUrl = pub.publicUrl
+  }
+
   // ----- Susun ulang objek konten dari form -----
 
   // Legalitas
@@ -66,11 +89,31 @@ export async function updateSiteContent(
     .map((p) => p.trim())
     .filter(Boolean)
 
+  // Menu navbar (maks 8 baris; baris tanpa label diabaikan)
+  const navMenu: SiteContent['navMenu'] = []
+  for (let i = 0; i < 8; i++) {
+    const label = s(formData, `nav_label_${i}`)
+    const url = s(formData, `nav_url_${i}`)
+    const enabled = formData.get(`nav_enabled_${i}`) === 'on'
+    if (label && url) navMenu.push({ label, url, enabled })
+  }
+
   const content: SiteContent = {
     clubName: s(formData, 'clubName') || defaultContent.clubName,
     clubShort: s(formData, 'clubShort') || defaultContent.clubShort,
     tagline: s(formData, 'tagline'),
     location: s(formData, 'location'),
+    logoUrl,
+    copyrightText: s(formData, 'copyright_text'),
+    theme: {
+      primary: s(formData, 'theme_primary') || defaultContent.theme.primary,
+      accent: s(formData, 'theme_accent') || defaultContent.theme.accent,
+    },
+    navMenu: navMenu.length ? navMenu : defaultContent.navMenu,
+    identityText: {
+      label: s(formData, 'identity_label'),
+      body: s(formData, 'identity_body'),
+    },
     // Hero & vision & federations: pertahankan nilai lama (dikelola via blok)
     hero: prev.hero ?? defaultContent.hero,
     vision: prev.vision ?? defaultContent.vision,
@@ -104,6 +147,7 @@ export async function updateSiteContent(
 
   // Segarkan halaman publik & pengaturan
   revalidatePath('/')
+  revalidatePath('/anggota')
   revalidatePath('/dashboard/settings/konten')
 
   return { success: 'Konten beranda berhasil diperbarui.' }

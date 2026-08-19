@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { Target, ArrowRight, Calendar } from 'lucide-react'
+import { Target, ArrowRight, Calendar, Award, FileText } from 'lucide-react'
 import type { PageBlock, BlockContent } from '@/lib/blocks'
+import type { SiteContent } from '@/lib/site-content'
 import { formatDate } from '@/lib/format'
 
 type GalleryPhoto = { id: string; title: string | null; image_url: string }
@@ -34,6 +35,9 @@ type Props = {
   news?: NewsItem[]
   schedules?: ScheduleItem[]
   events?: EventItem[]
+  siteContent?: SiteContent
+  chairmanPhoto?: string | null
+  chairmanName?: string | null
 }
 
 // Tombol opsional (dipakai beberapa tipe)
@@ -43,7 +47,7 @@ function BlockButton({ c }: { c: BlockContent }) {
   return (
     <a
       href={link}
-      className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-display font-semibold uppercase tracking-wide text-white bg-gradient-to-br from-[#ff5e3a] to-[#ff8a3a] hover:opacity-90 transition-opacity"
+      className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-display font-semibold uppercase tracking-wide text-white grad-accent hover:opacity-90 transition-opacity"
     >
       {c.button_text} <ArrowRight className="w-4 h-4" />
     </a>
@@ -52,7 +56,7 @@ function BlockButton({ c }: { c: BlockContent }) {
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
-    <p className="font-display text-[#ff5e3a] uppercase tracking-[0.2em] font-semibold text-center">
+    <p className="font-display text-accent uppercase tracking-[0.2em] font-semibold text-center">
       {children}
     </p>
   )
@@ -76,6 +80,9 @@ export default function BlockRenderer({
   news,
   schedules,
   events,
+  siteContent,
+  chairmanPhoto,
+  chairmanName,
 }: Props) {
   const c = block.content
 
@@ -85,14 +92,14 @@ export default function BlockRenderer({
       return (
         <section
           id="beranda"
-          className="relative min-h-screen flex items-center bg-[#0a0e27] overflow-hidden"
+          className="relative min-h-screen flex items-center bg-brand overflow-hidden"
         >
           <div className="absolute top-1/4 -right-40 w-96 h-96 rounded-full bg-[#ff5e3a] opacity-20 blur-3xl" />
           <div className="absolute bottom-0 -left-40 w-96 h-96 rounded-full bg-[#ff8a3a] opacity-10 blur-3xl" />
           <div className="relative max-w-6xl mx-auto px-5 py-32 grid md:grid-cols-2 gap-10 items-center">
             <div>
               {c.welcome && (
-                <p className="font-display text-[#ff5e3a] uppercase tracking-[0.2em] font-semibold mb-4">
+                <p className="font-display text-accent uppercase tracking-[0.2em] font-semibold mb-4">
                   {c.welcome}
                 </p>
               )}
@@ -102,7 +109,7 @@ export default function BlockRenderer({
                 </h1>
               )}
               {c.highlight && (
-                <h2 className="font-display text-2xl md:text-4xl font-bold uppercase leading-tight mb-6 bg-gradient-to-r from-[#ff5e3a] to-[#ff8a3a] bg-clip-text text-transparent">
+                <h2 className="font-display text-2xl md:text-4xl font-bold uppercase leading-tight mb-6 grad-accent bg-clip-text text-transparent">
                   {c.highlight}
                 </h2>
               )}
@@ -112,10 +119,10 @@ export default function BlockRenderer({
               <BlockButton c={c} />
             </div>
             <div className="hidden md:flex justify-center">
-              <div className="w-72 h-72 rounded-full border-4 border-[#ff5e3a]/30 grid place-items-center">
-                <div className="w-52 h-52 rounded-full border-4 border-[#ff5e3a]/50 grid place-items-center">
-                  <div className="w-32 h-32 rounded-full border-4 border-[#ff5e3a] grid place-items-center bg-[#ff5e3a]/10">
-                    <Target className="w-16 h-16 text-[#ff5e3a]" strokeWidth={1.5} />
+              <div className="w-72 h-72 rounded-full border-4 border-accent/30 grid place-items-center">
+                <div className="w-52 h-52 rounded-full border-4 border-accent/50 grid place-items-center">
+                  <div className="w-32 h-32 rounded-full border-4 border-accent grid place-items-center bg-[#ff5e3a]/10">
+                    <Target className="w-16 h-16 text-accent" strokeWidth={1.5} />
                   </div>
                 </div>
               </div>
@@ -127,7 +134,7 @@ export default function BlockRenderer({
     // ===== TEKS SAJA =====
     case 'text':
       return (
-        <section className={'py-20 ' + (c.dark ? 'bg-[#0a0e27]' : 'bg-white')}>
+        <section className={'py-20 ' + (c.dark ? 'bg-brand' : 'bg-white')}>
           <div className="max-w-3xl mx-auto px-5 text-center">
             {c.eyebrow && <Eyebrow>{c.eyebrow}</Eyebrow>}
             {c.title && <Title light={c.dark}>{c.title}</Title>}
@@ -154,7 +161,7 @@ export default function BlockRenderer({
     case 'image':
       if (!c.image_url) return null
       return (
-        <section className={'py-20 ' + (c.dark ? 'bg-[#0a0e27]' : 'bg-white')}>
+        <section className={'py-20 ' + (c.dark ? 'bg-brand' : 'bg-white')}>
           <div className="max-w-5xl mx-auto px-5">
             {c.title && <Title light={c.dark}>{c.title}</Title>}
             {c.image_fit === 'contain' ? (
@@ -187,7 +194,7 @@ export default function BlockRenderer({
     case 'text_image': {
       const imgLeft = c.image_side === 'left'
       return (
-        <section className={'py-20 ' + (c.dark ? 'bg-[#0a0e27]' : 'bg-white')}>
+        <section className={'py-20 ' + (c.dark ? 'bg-brand' : 'bg-white')}>
           <div className="max-w-6xl mx-auto px-5">
             {c.eyebrow && <Eyebrow>{c.eyebrow}</Eyebrow>}
             {c.title && <Title light={c.dark}>{c.title}</Title>}
@@ -234,8 +241,8 @@ export default function BlockRenderer({
                     </div>
                   )
                 ) : (
-                  <div className="aspect-[4/3] rounded-xl bg-gradient-to-br from-[#0a0e27] to-[#151b3d] grid place-items-center">
-                    <Target className="w-16 h-16 text-[#ff5e3a]/30" />
+                  <div className="aspect-[4/3] rounded-xl grad-brand grid place-items-center">
+                    <Target className="w-16 h-16 text-accent/30" />
                   </div>
                 )}
               </div>
@@ -248,7 +255,7 @@ export default function BlockRenderer({
     // ===== KARTU BERJAJAR =====
     case 'cards':
       return (
-        <section className={'py-20 ' + (c.dark ? 'bg-[#0a0e27]' : 'bg-white')}>
+        <section className={'py-20 ' + (c.dark ? 'bg-brand' : 'bg-white')}>
           <div className="max-w-6xl mx-auto px-5">
             {c.eyebrow && <Eyebrow>{c.eyebrow}</Eyebrow>}
             {c.title && <Title light={c.dark}>{c.title}</Title>}
@@ -257,8 +264,8 @@ export default function BlockRenderer({
                 <div
                   key={i}
                   className={
-                    'rounded-xl p-7 border-b-[3px] border-[#ff5e3a] ' +
-                    (c.dark ? 'bg-[#151b3d]' : 'bg-white shadow-[0_4px_14px_rgba(10,14,39,0.06)]')
+                    'rounded-xl p-7 border-b-[3px] border-accent ' +
+                    (c.dark ? 'bg-brand-soft' : 'bg-white shadow-[0_4px_14px_rgba(10,14,39,0.06)]')
                   }
                 >
                   <h3
@@ -284,9 +291,9 @@ export default function BlockRenderer({
       return (
         <section className="py-20 bg-white">
           <div className="max-w-5xl mx-auto px-5">
-            <div className="rounded-2xl bg-gradient-to-br from-[#0a0e27] to-[#151b3d] p-10 md:p-14 text-center">
+            <div className="rounded-2xl grad-brand p-10 md:p-14 text-center">
               {c.eyebrow && (
-                <p className="font-display text-[#ff5e3a] uppercase tracking-[0.2em] font-semibold mb-3">
+                <p className="font-display text-accent uppercase tracking-[0.2em] font-semibold mb-3">
                   {c.eyebrow}
                 </p>
               )}
@@ -316,13 +323,14 @@ export default function BlockRenderer({
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
                 {gallery.map((p) => (
-                  <div key={p.id} className="relative aspect-square rounded-xl overflow-hidden group">
+                  <div key={p.id} className="relative aspect-square rounded-xl overflow-hidden group bg-[#f0f2f8]">
                     <Image
                       src={p.image_url}
                       alt={p.title ?? 'Foto'}
                       fill
+                      unoptimized
                       sizes="(max-width:768px) 50vw, 25vw"
-                      className="object-cover group-hover:scale-105 transition-transform"
+                      className="object-contain group-hover:scale-105 transition-transform"
                     />
                   </div>
                 ))}
@@ -361,8 +369,8 @@ export default function BlockRenderer({
                           />
                         </div>
                       ) : (
-                        <div className="aspect-video bg-gradient-to-br from-[#0a0e27] to-[#151b3d] grid place-items-center">
-                          <Target className="w-12 h-12 text-[#ff5e3a]/40" />
+                        <div className="aspect-video grad-brand grid place-items-center">
+                          <Target className="w-12 h-12 text-accent/40" />
                         </div>
                       )}
                       <div className="p-5">
@@ -383,7 +391,7 @@ export default function BlockRenderer({
                 <div className="text-center mt-8">
                   <Link
                     href="/berita"
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-display font-semibold uppercase tracking-wide text-white bg-gradient-to-br from-[#ff5e3a] to-[#ff8a3a] hover:opacity-90"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-display font-semibold uppercase tracking-wide text-white grad-accent hover:opacity-90"
                   >
                     Lihat Semua Berita <ArrowRight className="w-4 h-4" />
                   </Link>
@@ -397,7 +405,7 @@ export default function BlockRenderer({
     // ===== JADWAL LATIHAN (otomatis) =====
     case 'schedules':
       return (
-        <section id="jadwal" className={'py-20 ' + (c.dark ? 'bg-[#0a0e27]' : 'bg-white')}>
+        <section id="jadwal" className={'py-20 ' + (c.dark ? 'bg-brand' : 'bg-white')}>
           <div className="max-w-4xl mx-auto px-5">
             {c.eyebrow && <Eyebrow>{c.eyebrow}</Eyebrow>}
             <Title light={c.dark}>{c.title ?? 'Jadwal Latihan'}</Title>
@@ -412,10 +420,10 @@ export default function BlockRenderer({
                       key={s.id}
                       className={
                         'flex gap-4 items-center rounded-xl p-4 ' +
-                        (c.dark ? 'bg-[#151b3d]' : 'bg-white shadow-[0_4px_14px_rgba(10,14,39,0.06)]')
+                        (c.dark ? 'bg-brand-soft' : 'bg-white shadow-[0_4px_14px_rgba(10,14,39,0.06)]')
                       }
                     >
-                      <div className="w-14 h-14 rounded-lg grid place-items-center text-white shrink-0 bg-gradient-to-br from-[#ff5e3a] to-[#ff8a3a]">
+                      <div className="w-14 h-14 rounded-lg grid place-items-center text-white shrink-0 grad-accent">
                         <span className="font-display text-lg font-bold leading-none">{d.getDate()}</span>
                         <span className="text-[10px] uppercase leading-none">
                           {d.toLocaleDateString('id-ID', { month: 'short' })}
@@ -443,7 +451,7 @@ export default function BlockRenderer({
     // ===== JADWAL KEGIATAN (otomatis) =====
     case 'events':
       return (
-        <section id="kegiatan" className={'py-20 ' + (c.dark ? 'bg-[#0a0e27]' : 'bg-[#f4f5fa]')}>
+        <section id="kegiatan" className={'py-20 ' + (c.dark ? 'bg-brand' : 'bg-[#f4f5fa]')}>
           <div className="max-w-6xl mx-auto px-5">
             {c.eyebrow && <Eyebrow>{c.eyebrow}</Eyebrow>}
             <Title light={c.dark}>{c.title ?? 'Jadwal Kegiatan'}</Title>
@@ -458,7 +466,7 @@ export default function BlockRenderer({
                       key={ev.id}
                       className="bg-white rounded-xl p-5 shadow-[0_4px_14px_rgba(10,14,39,0.06)] flex gap-4"
                     >
-                      <div className="w-14 h-14 rounded-lg grid place-items-center text-white shrink-0 bg-gradient-to-br from-[#ff5e3a] to-[#ff8a3a]">
+                      <div className="w-14 h-14 rounded-lg grid place-items-center text-white shrink-0 grad-accent">
                         <span className="font-display text-lg font-bold leading-none">{d.getDate()}</span>
                         <span className="text-[10px] uppercase leading-none">
                           {d.toLocaleDateString('id-ID', { month: 'short' })}
@@ -488,7 +496,7 @@ export default function BlockRenderer({
     // ===== FEDERASI =====
     case 'federations':
       return (
-        <section className={'py-20 ' + (c.dark ? 'bg-[#0a0e27]' : 'bg-white')}>
+        <section className={'py-20 ' + (c.dark ? 'bg-brand' : 'bg-white')}>
           <div className="max-w-6xl mx-auto px-5">
             {c.eyebrow && <Eyebrow>{c.eyebrow}</Eyebrow>}
             <Title light={c.dark}>{c.title ?? 'Afiliasi & Federasi'}</Title>
@@ -497,8 +505,8 @@ export default function BlockRenderer({
                 <div
                   key={i}
                   className={
-                    'rounded-xl p-6 text-center border-b-[3px] border-[#ff5e3a] ' +
-                    (c.dark ? 'bg-[#151b3d]' : 'bg-white shadow-[0_4px_14px_rgba(10,14,39,0.06)]')
+                    'rounded-xl p-6 text-center border-b-[3px] border-accent ' +
+                    (c.dark ? 'bg-brand-soft' : 'bg-white shadow-[0_4px_14px_rgba(10,14,39,0.06)]')
                   }
                 >
                   {f.image_url ? (
@@ -527,6 +535,174 @@ export default function BlockRenderer({
           </div>
         </section>
       )
+
+    // ===== LEGALITAS & KETUA (otomatis dari Pengaturan Identitas) =====
+    case 'legal': {
+      const about = siteContent?.about
+      const legal = about?.legal ?? []
+      const clubName = siteContent?.clubName ?? ''
+      // Jabatan ketua otomatis: "Ketua {Nama Club}"
+      const chairTitle = clubName ? `Ketua ${clubName}` : (about?.chairman ?? '')
+      const showChair = !!(chairmanName || chairmanPhoto || chairTitle)
+      if (!showChair && legal.length === 0) return null
+      return (
+        <section
+          id="legalitas"
+          className={'py-20 ' + (c.dark ? 'bg-brand' : 'bg-[#f4f5fa]')}
+        >
+          <div className="max-w-4xl mx-auto px-5">
+            {c.eyebrow && <Eyebrow>{c.eyebrow}</Eyebrow>}
+            <Title light={c.dark}>{c.title ?? 'Legalitas & Kepengurusan'}</Title>
+
+            {/* Kartu Ketua */}
+            {showChair && (
+              <div
+                className={
+                  'mt-8 rounded-xl p-6 text-center border-b-[3px] border-accent max-w-md mx-auto ' +
+                  (c.dark ? 'bg-brand-soft' : 'bg-white shadow-[0_4px_14px_rgba(10,14,39,0.06)]')
+                }
+              >
+                {chairmanPhoto ? (
+                  <div className="relative w-32 h-40 mx-auto mb-3 rounded-lg overflow-hidden bg-[#f0f2f8] ring-2 ring-[#ff5e3a]/40">
+                    <Image
+                      src={chairmanPhoto}
+                      alt={chairmanName ?? chairTitle}
+                      fill
+                      unoptimized
+                      sizes="128px"
+                      className="object-contain"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-12 h-12 rounded-lg grid place-items-center text-white mx-auto mb-3 grad-accent">
+                    <Award className="w-6 h-6" />
+                  </div>
+                )}
+                <p className="text-xs text-[#8890b5] uppercase tracking-[0.15em] mb-1">
+                  {chairTitle || 'Kepemimpinan'}
+                </p>
+                {chairmanName && (
+                  <p
+                    className={
+                      'font-display font-bold uppercase tracking-wide ' +
+                      (c.dark ? 'text-white' : 'text-[#0a0e27]')
+                    }
+                  >
+                    {chairmanName}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Grid legalitas */}
+            {legal.length > 0 && (
+              <div className="grid md:grid-cols-2 gap-5 mt-6">
+                {legal.map((item, i) => (
+                  <div
+                    key={i}
+                    className={
+                      'rounded-xl p-5 flex gap-4 items-start ' +
+                      (c.dark ? 'bg-brand-soft' : 'bg-white shadow-[0_4px_14px_rgba(10,14,39,0.06)]')
+                    }
+                  >
+                    <div className="w-10 h-10 rounded-lg grid place-items-center text-accent shrink-0 bg-[#ff5e3a]/10">
+                      <FileText className="w-5 h-5" />
+                    </div>
+                    <div className="min-w-0">
+                      <p
+                        className={
+                          'font-semibold leading-snug ' +
+                          (c.dark ? 'text-white' : 'text-[#0a0e27]')
+                        }
+                      >
+                        {item.label}
+                      </p>
+                      <p className="text-sm text-[#8890b5] break-words">{item.value}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )
+    }
+
+    // ===== TEKS IDENTITAS (otomatis dari Pengaturan Identitas) =====
+    // ===== IDENTITAS CLUB (otomatis, pola Teks + Gambar) =====
+    case 'identity_club': {
+      const name = siteContent?.clubName ?? ''
+      const logo = siteContent?.logoUrl ?? ''
+      const it = siteContent?.identityText
+      const label = it?.label ?? ''
+      const body = it?.body ?? ''
+      if (!name && !logo && !label && !body) return null
+      const imgLeft = c.image_side === 'left'
+      return (
+        <section className={'py-20 ' + (c.dark ? 'bg-brand' : 'bg-white')}>
+          <div className="max-w-6xl mx-auto px-5">
+            <div className="grid md:grid-cols-2 gap-10 items-center">
+              {/* Teks */}
+              <div className={(imgLeft ? 'md:order-2' : '') + ' min-w-0'}>
+                {name && <Eyebrow>{name}</Eyebrow>}
+                {name && (
+                  <h2
+                    className={
+                      'font-display text-3xl font-bold uppercase tracking-wide mt-2 break-words ' +
+                      (c.dark ? 'text-white' : 'text-[#0a0e27]')
+                    }
+                  >
+                    {name}
+                  </h2>
+                )}
+                {label && (
+                  <h3
+                    className={
+                      'font-display text-xl font-bold uppercase tracking-wide mt-4 break-words ' +
+                      (c.dark ? 'text-[#ff8a3a]' : 'text-accent')
+                    }
+                  >
+                    {label}
+                  </h3>
+                )}
+                {body && (
+                  <p
+                    className={
+                      'text-lg leading-relaxed mt-3 whitespace-pre-line break-words ' +
+                      (c.dark ? 'text-[#8890b5]' : 'text-[#3a3f5c]')
+                    }
+                  >
+                    {body}
+                  </p>
+                )}
+              </div>
+
+              {/* Gambar = logo (tidak dipotong) */}
+              <div className={imgLeft ? 'md:order-1' : ''}>
+                {logo ? (
+                  <div className="flex justify-center">
+                    <div className="relative w-64 h-64 rounded-2xl overflow-hidden bg-white ring-1 ring-black/5 grid place-items-center">
+                      <Image
+                        src={logo}
+                        alt={name || 'Logo'}
+                        fill
+                        unoptimized
+                        sizes="256px"
+                        className="object-contain p-6"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="aspect-square max-w-64 mx-auto rounded-2xl grad-brand grid place-items-center">
+                    <Target className="w-16 h-16 text-accent/30" />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+      )
+    }
 
     default:
       return null

@@ -45,6 +45,14 @@ function buildContent(
     return typeof v === 'string' ? v.trim() : ''
   }
   const on = (k: string) => formData.get(k) === 'on'
+  const removed = (k: string) => formData.get(k) === '1'
+
+  // Tentukan URL gambar akhir: gambar baru > (jika dihapus) kosong > existing
+  const resolveImage = (existingKey: string, removeKey: string) => {
+    if (imageUrl) return imageUrl
+    if (removed(removeKey)) return ''
+    return g(existingKey) || ''
+  }
 
   const base: BlockContent = {
     button_enabled: on('button_enabled'),
@@ -68,7 +76,7 @@ function buildContent(
       return {
         ...base,
         title: g('title'),
-        image_url: imageUrl || g('existing_image') || '',
+        image_url: resolveImage('existing_image', 'image_remove'),
         image_fit: (g('image_fit') as 'cover' | 'contain') || 'cover',
       }
     case 'text_image':
@@ -77,7 +85,7 @@ function buildContent(
         eyebrow: g('eyebrow'),
         title: g('title'),
         body: g('body'),
-        image_url: imageUrl || g('existing_image') || '',
+        image_url: resolveImage('existing_image', 'image_remove'),
         image_side: (g('image_side') as 'left' | 'right') || 'right',
         image_fit: (g('image_fit') as 'cover' | 'contain') || 'cover',
       }
@@ -106,6 +114,17 @@ function buildContent(
       }
       return { ...base, eyebrow: g('eyebrow'), title: g('title'), federations: feds }
     }
+    case 'legal':
+      // Data (ketua & legalitas) ditarik otomatis dari Pengaturan Identitas.
+      // Admin hanya mengatur judul, eyebrow, dan latar gelap.
+      return { eyebrow: g('eyebrow'), title: g('title'), dark: on('dark') }
+    case 'identity_club':
+      // Logo + nama club + judul & isi teks ditarik otomatis dari Pengaturan Identitas.
+      // Admin mengatur posisi gambar (kiri/kanan) & latar.
+      return {
+        dark: on('dark'),
+        image_side: (g('image_side') as 'left' | 'right') || 'right',
+      }
     case 'gallery':
     case 'news':
     case 'schedules':

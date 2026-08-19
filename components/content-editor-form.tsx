@@ -1,100 +1,190 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useEffect, useRef, useState } from 'react'
 import { updateSiteContent } from '@/app/dashboard/settings/content-actions'
 import type { SiteContent } from '@/lib/site-content'
+import ImageInput from '@/components/image-input'
+import ThemeEditor from '@/components/theme-editor'
+import NavMenuEditor from '@/components/nav-menu-editor'
+import { useToast } from '@/components/toast'
+
+const TABS = [
+  { key: 'identitas', label: 'Identitas & Branding' },
+  { key: 'navigasi', label: 'Navigasi' },
+  { key: 'legalitas', label: 'Legalitas & Kontak' },
+]
 
 export default function ContentEditorForm({ initial }: { initial: SiteContent }) {
   const [state, formAction, pending] = useActionState(updateSiteContent, null)
+  const { success, error } = useToast()
+  const lastState = useRef<unknown>(null)
+  const [tab, setTab] = useState('identitas')
+
+  useEffect(() => {
+    if (!state || state === lastState.current) return
+    lastState.current = state
+    if ('success' in state) success('Tersimpan', state.success)
+    else if ('error' in state) error('Gagal menyimpan', state.error)
+  }, [state, success, error])
 
   return (
-    <form action={formAction} className="space-y-8 max-w-3xl pb-10">
-      {state && 'error' in state && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded-lg text-sm sticky top-2 z-10">
-          {state.error}
-        </div>
-      )}
-      {state && 'success' in state && (
-        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-2 rounded-lg text-sm sticky top-2 z-10">
-          {state.success}
-        </div>
-      )}
+    <form action={formAction} className="max-w-3xl pb-10">
+      {/* Bar tab */}
+      <div className="flex flex-wrap gap-1 border-b mb-6 sticky top-0 bg-gray-50 z-10">
+        {TABS.map((t) => {
+          const on = t.key === tab
+          return (
+            <button
+              key={t.key}
+              type="button"
+              onClick={() => setTab(t.key)}
+              className={
+                'px-4 py-2.5 font-display font-semibold uppercase tracking-wide text-sm -mb-px border-b-2 transition-colors ' +
+                (on
+                  ? 'border-accent text-accent'
+                  : 'border-transparent text-[#8890b5] hover:text-[#0a0e27]')
+              }
+            >
+              {t.label}
+            </button>
+          )
+        })}
+      </div>
 
-      {/* ===== IDENTITAS ===== */}
-      <Section title="Identitas Club">
-        <Grid>
-          <Field label="Nama Club" name="clubName" defaultValue={initial.clubName} />
-          <Field label="Singkatan" name="clubShort" defaultValue={initial.clubShort} />
-          <Field label="Tagline" name="tagline" defaultValue={initial.tagline} />
-          <Field label="Lokasi Singkat" name="location" defaultValue={initial.location} />
-        </Grid>
-      </Section>
-
-      {/* ===== TENTANG: Jabatan Ketua + Legalitas ===== */}
-      <Section title="Legalitas & Ketua">
-        <Field label="Jabatan Ketua" name="about_chairman" defaultValue={initial.about.chairman} />
-
-        <SubLabel>Legalitas (SKEP, dll)</SubLabel>
-        {[0, 1, 2].map((i) => (
-          <Grid key={i}>
-            <Field
-              label={`Label ${i + 1}`}
-              name={`legal_label_${i}`}
-              defaultValue={initial.about.legal[i]?.label ?? ''}
-            />
-            <Field
-              label={`Nomor ${i + 1}`}
-              name={`legal_value_${i}`}
-              defaultValue={initial.about.legal[i]?.value ?? ''}
-            />
+      {/* ============ TAB: IDENTITAS & BRANDING ============ */}
+      <div className={tab === 'identitas' ? 'space-y-8' : 'hidden'}>
+        <Section title="Identitas Club">
+          <Grid>
+            <Field label="Nama Club" name="clubName" defaultValue={initial.clubName} />
+            <Field label="Singkatan" name="clubShort" defaultValue={initial.clubShort} />
+            <Field label="Tagline" name="tagline" defaultValue={initial.tagline} />
+            <Field label="Lokasi Singkat" name="location" defaultValue={initial.location} />
           </Grid>
-        ))}
-      </Section>
 
-      {/* ===== KONTAK ===== */}
-      <Section title="Kontak">
-        <Area label="Alamat (boleh beberapa baris)" name="contact_address" defaultValue={initial.contact.address} />
-        <Field label="Email" name="contact_email" defaultValue={initial.contact.email} />
-        <Area
-          label="Telepon (satu nomor per baris)"
-          name="contact_phone"
-          defaultValue={initial.contact.phone.join('\n')}
-        />
-      </Section>
-
-      {/* ===== PARTNER ===== */}
-      <Section title="Tautan Partner">
-        <SubLabel>Isi hingga 4 tautan. Kosongkan jika tidak dipakai.</SubLabel>
-        {[0, 1, 2, 3].map((i) => (
-          <Grid key={i}>
+          <div className="pt-2 space-y-3 border-t mt-2">
+            <SubLabel>
+              Teks Bebas Identitas — tampil di beranda bila kamu menambahkan blok
+              &quot;Identitas Club (otomatis)&quot;.
+            </SubLabel>
             <Field
-              label={`Nama ${i + 1}`}
-              name={`partner_label_${i}`}
-              defaultValue={initial.partners[i]?.label ?? ''}
+              label="Judul Teks"
+              name="identity_label"
+              defaultValue={initial.identityText?.label ?? ''}
             />
-            <Field
-              label={`URL ${i + 1}`}
-              name={`partner_url_${i}`}
-              defaultValue={initial.partners[i]?.url ?? ''}
+            <Area
+              label="Isi Teks"
+              name="identity_body"
+              defaultValue={initial.identityText?.body ?? ''}
+              rows={4}
             />
-          </Grid>
-        ))}
-      </Section>
+          </div>
 
-      <div className="sticky bottom-0 bg-white/90 backdrop-blur py-3 border-t">
+          <div className="pt-2">
+            <label className="block text-sm font-medium mb-1">Logo Club</label>
+            <ImageInput
+              name="logo"
+              initialPreview={initial.logoUrl || null}
+              hint="Format PNG/JPG. Gambar akan dikompres otomatis. Kosongkan jika tidak ingin mengubah."
+            />
+            <input type="hidden" name="logo_existing" defaultValue={initial.logoUrl} />
+          </div>
+
+          <div className="pt-2">
+            <Field
+              label="Teks Hak Cipta (footer)"
+              name="copyright_text"
+              defaultValue={initial.copyrightText ?? ''}
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Kosongkan untuk memakai default: © {new Date().getFullYear()}{' '}
+              {initial.clubName}. Seluruh hak cipta dilindungi.
+            </p>
+          </div>
+        </Section>
+
+        <Section title="Tema Warna">
+          <ThemeEditor
+            initialPrimary={initial.theme?.primary ?? '#0a0e27'}
+            initialAccent={initial.theme?.accent ?? '#ff5e3a'}
+          />
+        </Section>
+      </div>
+
+      {/* ============ TAB: NAVIGASI ============ */}
+      <div className={tab === 'navigasi' ? 'space-y-8' : 'hidden'}>
+        <Section title="Menu Navbar Publik">
+          <NavMenuEditor initial={initial.navMenu} />
+        </Section>
+      </div>
+
+      {/* ============ TAB: LEGALITAS & KONTAK ============ */}
+      <div className={tab === 'legalitas' ? 'space-y-8' : 'hidden'}>
+        <Section title="Legalitas & Ketua">
+          <Field label="Jabatan Ketua" name="about_chairman" defaultValue={initial.about.chairman} />
+
+          <SubLabel>Legalitas (SKEP, dll)</SubLabel>
+          {[0, 1, 2].map((i) => (
+            <Grid key={i}>
+              <Field
+                label={`Label ${i + 1}`}
+                name={`legal_label_${i}`}
+                defaultValue={initial.about.legal[i]?.label ?? ''}
+              />
+              <Field
+                label={`Nomor ${i + 1}`}
+                name={`legal_value_${i}`}
+                defaultValue={initial.about.legal[i]?.value ?? ''}
+              />
+            </Grid>
+          ))}
+        </Section>
+
+        <Section title="Kontak">
+          <Area label="Alamat (boleh beberapa baris)" name="contact_address" defaultValue={initial.contact.address} />
+          <Field label="Email" name="contact_email" defaultValue={initial.contact.email} />
+          <Area
+            label="Telepon (satu nomor per baris)"
+            name="contact_phone"
+            defaultValue={initial.contact.phone.join('\n')}
+          />
+        </Section>
+
+        <Section title="Tautan Partner">
+          <SubLabel>Isi hingga 4 tautan. Kosongkan jika tidak dipakai.</SubLabel>
+          {[0, 1, 2, 3].map((i) => (
+            <Grid key={i}>
+              <Field
+                label={`Nama ${i + 1}`}
+                name={`partner_label_${i}`}
+                defaultValue={initial.partners[i]?.label ?? ''}
+              />
+              <Field
+                label={`URL ${i + 1}`}
+                name={`partner_url_${i}`}
+                defaultValue={initial.partners[i]?.url ?? ''}
+              />
+            </Grid>
+          ))}
+        </Section>
+      </div>
+
+      {/* Tombol simpan — berlaku untuk semua tab */}
+      <div className="sticky bottom-0 bg-white/90 backdrop-blur py-3 border-t mt-8">
         <button
           type="submit"
           disabled={pending}
-          className="bg-[#ff5e3a] text-white px-6 py-2.5 rounded-lg hover:opacity-90 disabled:opacity-50 font-display font-semibold uppercase tracking-wide"
+          className="bg-accent text-white px-6 py-2.5 rounded-lg hover:opacity-90 disabled:opacity-50 font-display font-semibold uppercase tracking-wide"
         >
           {pending ? 'Menyimpan...' : 'Simpan Konten'}
         </button>
+        <span className="text-xs text-gray-500 ml-3">
+          Semua tab tersimpan sekaligus.
+        </span>
       </div>
     </form>
   )
 }
 
-// ===== Komponen bantu =====
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="bg-white rounded-xl shadow border p-5">

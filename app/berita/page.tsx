@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getSiteContent } from '@/lib/site-content'
 import { formatDate } from '@/lib/format'
 import PublicNavbar from '@/components/public/public-navbar'
+import PublicFooter from '@/components/public/public-footer'
 
 export default async function BeritaListPage() {
   const supabase = await createClient()
@@ -18,17 +19,17 @@ export default async function BeritaListPage() {
 
   return (
     <div className="bg-white min-h-screen">
-      <PublicNavbar clubName={c.clubName} />
+      <PublicNavbar clubName={c.clubName} logoUrl={c.logoUrl} navMenu={c.navMenu} />
 
       <div className="max-w-6xl mx-auto px-5 pt-28 pb-20">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-[#8890b5] hover:text-[#ff5e3a] text-sm mb-6"
+          className="inline-flex items-center gap-2 text-[#8890b5] hover:text-accent text-sm mb-6"
         >
           <ArrowLeft className="w-4 h-4" /> Kembali ke beranda
         </Link>
 
-        <p className="font-display text-[#ff5e3a] uppercase tracking-[0.2em] font-semibold">
+        <p className="font-display text-accent uppercase tracking-[0.2em] font-semibold">
           Informasi
         </p>
         <h1 className="font-display text-4xl font-bold uppercase tracking-wide text-[#0a0e27] mb-8">
@@ -51,13 +52,14 @@ export default async function BeritaListPage() {
                       src={n.image_url}
                       alt={n.title}
                       fill
+                      unoptimized
                       sizes="(max-width:768px) 100vw, 33vw"
                       className="object-cover group-hover:scale-105 transition-transform"
                     />
                   </div>
                 ) : (
                   <div className="aspect-video bg-gradient-to-br from-[#0a0e27] to-[#151b3d] grid place-items-center">
-                    <Target className="w-12 h-12 text-[#ff5e3a]/40" />
+                    <Target className="w-12 h-12 text-accent/40" />
                   </div>
                 )}
                 <div className="p-5">
@@ -77,6 +79,8 @@ export default async function BeritaListPage() {
           </div>
         )}
       </div>
+
+      <PublicFooter content={c} />
     </div>
   )
 }

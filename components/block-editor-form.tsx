@@ -46,9 +46,35 @@ export default function BlockEditorForm({
 
       {isAuto && (
         <p className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg text-sm">
-          Blok ini menarik data otomatis dari{' '}
-          {type === 'gallery' ? 'Galeri' : 'Berita'}. Anda hanya mengatur judulnya.
+          {type === 'legal'
+            ? 'Blok ini menampilkan Jabatan Ketua & Legalitas secara otomatis dari Pengaturan Identitas. Anda hanya mengatur judulnya.'
+            : type === 'identity_club'
+            ? 'Blok ini menampilkan Logo, Nama Club, Judul & Isi Teks otomatis dari Pengaturan Identitas. Anda hanya mengatur posisi gambar & latar.'
+            : `Blok ini menarik data otomatis dari ${
+                type === 'gallery'
+                  ? 'Galeri'
+                  : type === 'news'
+                  ? 'Berita'
+                  : type === 'schedules'
+                  ? 'Jadwal Latihan'
+                  : 'Jadwal Kegiatan'
+              }. Anda hanya mengatur judulnya.`}
         </p>
+      )}
+
+      {/* Posisi gambar untuk Identitas Club */}
+      {type === 'identity_club' && (
+        <div>
+          <label className="block text-sm font-medium mb-1">Posisi Logo</label>
+          <select
+            name="image_side"
+            defaultValue={c.image_side ?? 'right'}
+            className="w-full border rounded-lg px-3 py-2 bg-white"
+          >
+            <option value="right">Kanan</option>
+            <option value="left">Kiri</option>
+          </select>
+        </div>
       )}
 
       {/* Eyebrow & Title (umum kecuali hero) */}
@@ -171,7 +197,7 @@ export default function BlockEditorForm({
       )}
 
       {/* Latar gelap (untuk beberapa tipe) */}
-      {['text', 'image', 'text_image', 'cards'].includes(type) && (
+      {['text', 'image', 'text_image', 'cards', 'legal', 'identity_club'].includes(type) && (
         <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"
@@ -214,7 +240,7 @@ export default function BlockEditorForm({
         <button
           type="submit"
           disabled={pending}
-          className="bg-[#ff5e3a] text-white px-5 py-2 rounded-lg hover:opacity-90 disabled:opacity-50 font-display font-semibold uppercase tracking-wide"
+          className="bg-accent text-white px-5 py-2 rounded-lg hover:opacity-90 disabled:opacity-50 font-display font-semibold uppercase tracking-wide"
         >
           {pending ? 'Menyimpan...' : submitLabel}
         </button>

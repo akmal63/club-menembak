@@ -1,0 +1,117 @@
+'use client'
+
+import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import Image from 'next/image'
+
+export default function LoginPage() {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [logoUrl, setLogoUrl] = useState('')
+  const [clubName, setClubName] = useState('')
+  const router = useRouter()
+  const supabase = createClient()
+
+  // Ambil logo & nama club dari pengaturan identitas (baris publik)
+  useEffect(() => {
+    supabase
+      .from('site_settings')
+      .select('value')
+      .eq('key', 'home_content')
+      .single()
+      .then(({ data }) => {
+        const v = (data?.value ?? {}) as { logoUrl?: string; clubName?: string }
+        if (v.logoUrl) setLogoUrl(v.logoUrl)
+        if (v.clubName) setClubName(v.clubName)
+      })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+
+    if (error) {
+      setError('Email atau password salah.')
+      setLoading(false)
+      return
+    }
+
+    router.push('/dashboard')
+    router.refresh()
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <form
+        onSubmit={handleLogin}
+        className="w-full max-w-md space-y-4 p-8 bg-white rounded-xl shadow"
+      >
+        {/* Logo club */}
+        <div className="flex flex-col items-center gap-2">
+          {logoUrl ? (
+            <span className="relative w-16 h-16 rounded-xl overflow-hidden bg-white ring-1 ring-black/5 grid place-items-center">
+              <Image src={logoUrl} alt={clubName || 'Logo'} fill sizes="64px" className="object-contain" />
+            </span>
+          ) : (
+            <span className="w-16 h-16 rounded-xl grid place-items-center text-white font-bold text-2xl bg-gradient-to-br from-[#ff5e3a] to-[#ff8a3a]">
+              ◎
+            </span>
+          )}
+          {clubName && (
+            <span className="font-display text-sm font-bold uppercase tracking-wide text-[#0a0e27] text-center">
+              {clubName}
+            </span>
+          )}
+        </div>
+
+        <h1 className="text-2xl font-bold text-center">Masuk</h1>
+
+        {error && <p className="text-red-500 text-sm">{error}</p>}
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Email</label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="w-full border rounded-lg px-3 py-2"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Password</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="w-full border rounded-lg px-3 py-2"
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+        >
+          {loading ? 'Memproses...' : 'Masuk'}
+        </button>
+
+        <p className="text-center text-xs text-gray-500">
+          Akun dibuat oleh pengurus. Hubungi Super Admin bila belum punya akses.
+        </p>
+      </form>
+    </div>
+  )
+}

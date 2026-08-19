@@ -14,6 +14,8 @@ export type BlockType =
   | 'schedules'
   | 'events'
   | 'federations'
+  | 'legal'
+  | 'identity_club'
 
 export type BlockButton = {
   button_enabled?: boolean
@@ -63,7 +65,9 @@ export const BLOCK_LABELS: Record<BlockType, string> = {
   schedules: 'Jadwal Latihan (otomatis)',
   events: 'Jadwal Kegiatan (otomatis)',
   federations: 'Afiliasi / Federasi',
+  legal: 'Legalitas & Ketua (otomatis)',
+  identity_club: 'Identitas Club (otomatis)',
 }
 
-// Tipe yang menarik data dari tabel lain (tak punya konten teks utama)
-export const AUTO_TYPES: BlockType[] = ['gallery', 'news', 'schedules', 'events']
+// Tipe yang menarik data dari tabel lain / pengaturan (tak punya konten teks utama)
+export const AUTO_TYPES: BlockType[] = ['gallery', 'news', 'schedules', 'events', 'legal', 'identity_club']
