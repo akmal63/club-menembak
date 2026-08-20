@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { checkPermission } from '@/lib/permissions'
 import type { BlockType, BlockContent } from '@/lib/blocks'
-import { AUTO_TYPES } from '@/lib/blocks'
+import { AUTO_TYPES, slugifyAnchor } from '@/lib/blocks'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
@@ -47,6 +47,10 @@ function buildContent(
   const on = (k: string) => formData.get(k) === 'on'
   const removed = (k: string) => formData.get(k) === '1'
 
+  // ID section (anchor) untuk menu navbar — dirapikan jadi slug aman.
+  const rawAnchor = g('anchor')
+  const anchor = rawAnchor ? slugifyAnchor(rawAnchor) : ''
+
   // Tentukan URL gambar akhir: gambar baru > (jika dihapus) kosong > existing
   const resolveImage = (existingKey: string, removeKey: string) => {
     if (imageUrl) return imageUrl
@@ -55,6 +59,7 @@ function buildContent(
   }
 
   const base: BlockContent = {
+    anchor,
     button_enabled: on('button_enabled'),
     button_text: g('button_text'),
     button_link: g('button_link'),
@@ -116,12 +121,13 @@ function buildContent(
     }
     case 'legal':
       // Data (ketua & legalitas) ditarik otomatis dari Pengaturan Identitas.
-      // Admin hanya mengatur judul, eyebrow, dan latar gelap.
-      return { eyebrow: g('eyebrow'), title: g('title'), dark: on('dark') }
+      // Admin hanya mengatur judul, eyebrow, latar gelap, dan ID section.
+      return { anchor, eyebrow: g('eyebrow'), title: g('title'), dark: on('dark') }
     case 'identity_club':
       // Logo + nama club + judul & isi teks ditarik otomatis dari Pengaturan Identitas.
-      // Admin mengatur posisi gambar (kiri/kanan) & latar.
+      // Admin mengatur posisi gambar (kiri/kanan), latar, dan ID section.
       return {
+        anchor,
         dark: on('dark'),
         image_side: (g('image_side') as 'left' | 'right') || 'right',
       }
@@ -129,7 +135,7 @@ function buildContent(
     case 'news':
     case 'schedules':
     case 'events':
-      return { eyebrow: g('eyebrow'), title: g('title') }
+      return { anchor, eyebrow: g('eyebrow'), title: g('title') }
     default:
       return base
   }

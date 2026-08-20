@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Target, ArrowRight, Calendar, Award, FileText } from 'lucide-react'
 import type { PageBlock, BlockContent } from '@/lib/blocks'
+import { resolveAnchor } from '@/lib/blocks'
 import type { SiteContent } from '@/lib/site-content'
 import { formatDate } from '@/lib/format'
 
@@ -39,6 +40,9 @@ type Props = {
   chairmanPhoto?: string | null
   chairmanName?: string | null
 }
+
+// Jarak agar section tidak tertutup navbar yang fixed di atas.
+const SCROLL_MT = 'scroll-mt-24'
 
 // Tombol opsional (dipakai beberapa tipe)
 function BlockButton({ c }: { c: BlockContent }) {
@@ -86,13 +90,20 @@ export default function BlockRenderer({
 }: Props) {
   const c = block.content
 
+  // ID section final: anchor manual dari admin > bawaan tiap tipe > tidak ada.
+  const anchor = resolveAnchor(block.type, c)
+  // Properti yang dipasang ke setiap <section> agar bisa dituju menu navbar.
+  const sect = anchor ? { id: anchor } : {}
+
   switch (block.type) {
     // ===== HERO =====
     case 'hero':
       return (
         <section
-          id="beranda"
-          className="relative min-h-screen flex items-center bg-brand overflow-hidden"
+          {...sect}
+          className={
+            'relative min-h-screen flex items-center bg-brand overflow-hidden ' + SCROLL_MT
+          }
         >
           <div className="absolute top-1/4 -right-40 w-96 h-96 rounded-full bg-[#ff5e3a] opacity-20 blur-3xl" />
           <div className="absolute bottom-0 -left-40 w-96 h-96 rounded-full bg-[#ff8a3a] opacity-10 blur-3xl" />
@@ -134,7 +145,7 @@ export default function BlockRenderer({
     // ===== TEKS SAJA =====
     case 'text':
       return (
-        <section className={'py-20 ' + (c.dark ? 'bg-brand' : 'bg-white')}>
+        <section {...sect} className={'py-20 ' + SCROLL_MT + ' ' + (c.dark ? 'bg-brand' : 'bg-white')}>
           <div className="max-w-3xl mx-auto px-5 text-center">
             {c.eyebrow && <Eyebrow>{c.eyebrow}</Eyebrow>}
             {c.title && <Title light={c.dark}>{c.title}</Title>}
@@ -161,7 +172,7 @@ export default function BlockRenderer({
     case 'image':
       if (!c.image_url) return null
       return (
-        <section className={'py-20 ' + (c.dark ? 'bg-brand' : 'bg-white')}>
+        <section {...sect} className={'py-20 ' + SCROLL_MT + ' ' + (c.dark ? 'bg-brand' : 'bg-white')}>
           <div className="max-w-5xl mx-auto px-5">
             {c.title && <Title light={c.dark}>{c.title}</Title>}
             {c.image_fit === 'contain' ? (
@@ -194,7 +205,7 @@ export default function BlockRenderer({
     case 'text_image': {
       const imgLeft = c.image_side === 'left'
       return (
-        <section className={'py-20 ' + (c.dark ? 'bg-brand' : 'bg-white')}>
+        <section {...sect} className={'py-20 ' + SCROLL_MT + ' ' + (c.dark ? 'bg-brand' : 'bg-white')}>
           <div className="max-w-6xl mx-auto px-5">
             {c.eyebrow && <Eyebrow>{c.eyebrow}</Eyebrow>}
             {c.title && <Title light={c.dark}>{c.title}</Title>}
@@ -255,7 +266,7 @@ export default function BlockRenderer({
     // ===== KARTU BERJAJAR =====
     case 'cards':
       return (
-        <section className={'py-20 ' + (c.dark ? 'bg-brand' : 'bg-white')}>
+        <section {...sect} className={'py-20 ' + SCROLL_MT + ' ' + (c.dark ? 'bg-brand' : 'bg-white')}>
           <div className="max-w-6xl mx-auto px-5">
             {c.eyebrow && <Eyebrow>{c.eyebrow}</Eyebrow>}
             {c.title && <Title light={c.dark}>{c.title}</Title>}
@@ -289,7 +300,7 @@ export default function BlockRenderer({
     // ===== CTA / SOROTAN =====
     case 'cta':
       return (
-        <section className="py-20 bg-white">
+        <section {...sect} className={'py-20 bg-white ' + SCROLL_MT}>
           <div className="max-w-5xl mx-auto px-5">
             <div className="rounded-2xl grad-brand p-10 md:p-14 text-center">
               {c.eyebrow && (
@@ -314,7 +325,7 @@ export default function BlockRenderer({
     // ===== GALERI (otomatis) =====
     case 'gallery':
       return (
-        <section id="galeri" className="py-20 bg-white">
+        <section {...sect} className={'py-20 bg-white ' + SCROLL_MT}>
           <div className="max-w-6xl mx-auto px-5">
             {c.eyebrow && <Eyebrow>{c.eyebrow}</Eyebrow>}
             <Title>{c.title ?? 'Galeri'}</Title>
@@ -343,7 +354,7 @@ export default function BlockRenderer({
     // ===== BERITA (otomatis) =====
     case 'news':
       return (
-        <section id="berita" className="py-20 bg-[#f4f5fa]">
+        <section {...sect} className={'py-20 bg-[#f4f5fa] ' + SCROLL_MT}>
           <div className="max-w-6xl mx-auto px-5">
             {c.eyebrow && <Eyebrow>{c.eyebrow}</Eyebrow>}
             <Title>{c.title ?? 'Berita Terbaru'}</Title>
@@ -405,7 +416,7 @@ export default function BlockRenderer({
     // ===== JADWAL LATIHAN (otomatis) =====
     case 'schedules':
       return (
-        <section id="jadwal" className={'py-20 ' + (c.dark ? 'bg-brand' : 'bg-white')}>
+        <section {...sect} className={'py-20 ' + SCROLL_MT + ' ' + (c.dark ? 'bg-brand' : 'bg-white')}>
           <div className="max-w-4xl mx-auto px-5">
             {c.eyebrow && <Eyebrow>{c.eyebrow}</Eyebrow>}
             <Title light={c.dark}>{c.title ?? 'Jadwal Latihan'}</Title>
@@ -451,7 +462,7 @@ export default function BlockRenderer({
     // ===== JADWAL KEGIATAN (otomatis) =====
     case 'events':
       return (
-        <section id="kegiatan" className={'py-20 ' + (c.dark ? 'bg-brand' : 'bg-[#f4f5fa]')}>
+        <section {...sect} className={'py-20 ' + SCROLL_MT + ' ' + (c.dark ? 'bg-brand' : 'bg-[#f4f5fa]')}>
           <div className="max-w-6xl mx-auto px-5">
             {c.eyebrow && <Eyebrow>{c.eyebrow}</Eyebrow>}
             <Title light={c.dark}>{c.title ?? 'Jadwal Kegiatan'}</Title>
@@ -496,7 +507,7 @@ export default function BlockRenderer({
     // ===== FEDERASI =====
     case 'federations':
       return (
-        <section className={'py-20 ' + (c.dark ? 'bg-brand' : 'bg-white')}>
+        <section {...sect} className={'py-20 ' + SCROLL_MT + ' ' + (c.dark ? 'bg-brand' : 'bg-white')}>
           <div className="max-w-6xl mx-auto px-5">
             {c.eyebrow && <Eyebrow>{c.eyebrow}</Eyebrow>}
             <Title light={c.dark}>{c.title ?? 'Afiliasi & Federasi'}</Title>
@@ -546,10 +557,7 @@ export default function BlockRenderer({
       const showChair = !!(chairmanName || chairmanPhoto || chairTitle)
       if (!showChair && legal.length === 0) return null
       return (
-        <section
-          id="legalitas"
-          className={'py-20 ' + (c.dark ? 'bg-brand' : 'bg-[#f4f5fa]')}
-        >
+        <section {...sect} className={'py-20 ' + SCROLL_MT + ' ' + (c.dark ? 'bg-brand' : 'bg-[#f4f5fa]')}>
           <div className="max-w-4xl mx-auto px-5">
             {c.eyebrow && <Eyebrow>{c.eyebrow}</Eyebrow>}
             <Title light={c.dark}>{c.title ?? 'Legalitas & Kepengurusan'}</Title>
@@ -628,7 +636,6 @@ export default function BlockRenderer({
       )
     }
 
-    // ===== TEKS IDENTITAS (otomatis dari Pengaturan Identitas) =====
     // ===== IDENTITAS CLUB (otomatis, pola Teks + Gambar) =====
     case 'identity_club': {
       const name = siteContent?.clubName ?? ''
@@ -639,7 +646,7 @@ export default function BlockRenderer({
       if (!name && !logo && !label && !body) return null
       const imgLeft = c.image_side === 'left'
       return (
-        <section className={'py-20 ' + (c.dark ? 'bg-brand' : 'bg-white')}>
+        <section {...sect} className={'py-20 ' + SCROLL_MT + ' ' + (c.dark ? 'bg-brand' : 'bg-white')}>
           <div className="max-w-6xl mx-auto px-5">
             <div className="grid md:grid-cols-2 gap-10 items-center">
               {/* Teks */}

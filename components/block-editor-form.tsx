@@ -62,6 +62,25 @@ export default function BlockEditorForm({
         </p>
       )}
 
+      {/* ID SECTION (anchor) untuk menu navbar */}
+      <div>
+        <label className="block text-sm font-medium mb-1">
+          ID Section (untuk menu navbar)
+        </label>
+        <input
+          type="text"
+          name="anchor"
+          defaultValue={c.anchor ?? ''}
+          placeholder="mis. tentang, visimisi, program"
+          className="w-full border rounded-lg px-3 py-2"
+        />
+        <p className="text-xs text-[#8890b5] mt-1">
+          Isi agar blok ini bisa dituju dari menu. Contoh: isi <b>tentang</b>, lalu di
+          Pengaturan → Navigasi buat menu dengan URL <b>/#tentang</b>. Gunakan huruf kecil
+          tanpa spasi. Kosongkan jika tak perlu.
+        </p>
+      </div>
+
       {/* Posisi gambar untuk Identitas Club */}
       {type === 'identity_club' && (
         <div>
