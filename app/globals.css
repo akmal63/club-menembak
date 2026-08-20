@@ -10,7 +10,14 @@
 
   /* Alias lama tetap dipertahankan, kini mengikuti brand */
   --navy: var(--brand-primary);   /* latar sidebar, teks utama */
-  --navy-soft: #151b3d;           /* hover di sidebar */
+
+  /* navy-soft = warna kartu di latar gelap.
+     Kini DIHITUNG OTOMATIS dari brand-primary agar ikut tema:
+     primary dicampur sedikit putih supaya kartu sedikit lebih terang
+     dari latar. Dengan primary default #0a0e27, hasilnya ~#151b3d
+     (mendekati nilai lama), jadi tampilan awal tidak berubah. */
+  --navy-soft: color-mix(in srgb, var(--brand-primary) 88%, #ffffff 12%);
+
   --orange: var(--brand-accent);  /* aksen utama */
   --orange-soft: #ff8a3a;         /* gradasi aksen */
   --bg: #f4f5fa;                  /* latar konten */
