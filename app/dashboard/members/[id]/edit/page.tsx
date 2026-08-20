@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { checkPermission } from '@/lib/permissions'
+import { getSiteContent } from '@/lib/site-content'
 import MemberForm from '@/components/member-form'
 import { updateMember } from '../../actions'
 
@@ -36,6 +37,8 @@ export default async function EditMemberPage({
 
   if (!member) notFound()
 
+  const c = await getSiteContent()
+
   // Bungkus updateMember agar sesuai signature (prev, formData)
   const updateWithId = updateMember.bind(null, id)
 
@@ -46,6 +49,8 @@ export default async function EditMemberPage({
         action={updateWithId}
         initial={member}
         submitLabel="Simpan Perubahan"
+        positionOptions={c.positionOptions}
+        categoryOptions={c.categoryOptions}
       />
     </div>
   )

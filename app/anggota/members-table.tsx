@@ -11,6 +11,7 @@ export type PublicMember = {
   position: string | null
   status: string | null
   photo_url: string | null
+  category: string[] | null
 }
 
 function isActive(status: string | null) {
@@ -90,6 +91,18 @@ export default function MembersTable({ members }: { members: PublicMember[] }) {
                       {m.full_name || '-'}
                     </div>
                     <div className="text-[#3a3f5c]">{m.position || '-'}</div>
+                    {m.category && m.category.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {m.category.map((cat) => (
+                          <span
+                            key={cat}
+                            className="inline-block px-2 py-0.5 rounded-full text-[11px] font-medium bg-[color:var(--brand-accent)]/10 text-accent border border-[color:var(--brand-accent)]/20"
+                          >
+                            {cat}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                     <div>
                       <span
                         className={

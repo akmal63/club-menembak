@@ -12,6 +12,7 @@ const TABS = [
   { key: 'identitas', label: 'Identitas & Branding' },
   { key: 'navigasi', label: 'Navigasi' },
   { key: 'legalitas', label: 'Legalitas & Kontak' },
+  { key: 'anggota', label: 'Data Anggota' },
 ]
 
 export default function ContentEditorForm({ initial }: { initial: SiteContent }) {
@@ -108,6 +109,24 @@ export default function ContentEditorForm({ initial }: { initial: SiteContent })
             initialAccent={initial.theme?.accent ?? '#ff5e3a'}
           />
         </Section>
+
+        <Section title="Halaman Struktur Organisasi">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              name="structure_dark"
+              defaultChecked={initial.structureDark ?? true}
+              className="w-4 h-4 accent-[#ff5e3a]"
+            />
+            <span className="text-sm font-medium">
+              Latar gelap (navy mengikuti tema)
+            </span>
+          </label>
+          <p className="text-xs text-gray-500">
+            Jika dicentang, halaman <b>/struktur</b> berlatar navy (ikut tema).
+            Jika tidak, berlatar putih. Kartu bagan tetap terbaca di kedua mode.
+          </p>
+        </Section>
       </div>
 
       {/* ============ TAB: NAVIGASI ============ */}
@@ -165,6 +184,24 @@ export default function ContentEditorForm({ initial }: { initial: SiteContent })
               />
             </Grid>
           ))}
+        </Section>
+      </div>
+
+      {/* ============ TAB: DATA ANGGOTA ============ */}
+      <div className={tab === 'anggota' ? 'space-y-8' : 'hidden'}>
+        <Section title="Daftar Jabatan">
+          <p className="text-sm text-[#8890b5]">
+            Urutan daftar ini juga menentukan urutan tampil anggota (jabatan paling
+            atas tampil lebih dulu). Dipakai sebagai pilihan di form anggota.
+          </p>
+          <ListEditor name="positionOptions" initial={initial.positionOptions ?? []} />
+        </Section>
+
+        <Section title="Daftar Kategori">
+          <p className="text-sm text-[#8890b5]">
+            Pilihan kategori di form anggota. Bisa ditambah/diubah/dihapus.
+          </p>
+          <ListEditor name="categoryOptions" initial={initial.categoryOptions ?? []} />
         </Section>
       </div>
 
@@ -242,6 +279,77 @@ function Area({
         rows={rows}
         className="w-full border rounded-lg px-3 py-2"
       />
+    </div>
+  )
+}
+
+// Editor daftar teks (jabatan / kategori): tambah, hapus, naik/turun.
+// Tiap item dikirim sebagai input hidden bernama `${name}[]`.
+function ListEditor({ name, initial }: { name: string; initial: string[] }) {
+  const [items, setItems] = useState<string[]>(initial.length ? initial : [''])
+
+  const update = (i: number, v: string) =>
+    setItems((prev) => prev.map((x, j) => (j === i ? v : x)))
+  const add = () => setItems((prev) => [...prev, ''])
+  const remove = (i: number) => setItems((prev) => prev.filter((_, j) => j !== i))
+  const move = (i: number, dir: -1 | 1) =>
+    setItems((prev) => {
+      const j = i + dir
+      if (j < 0 || j >= prev.length) return prev
+      const next = [...prev]
+      ;[next[i], next[j]] = [next[j], next[i]]
+      return next
+    })
+
+  return (
+    <div className="space-y-2">
+      {items.map((val, i) => (
+        <div key={i} className="flex items-center gap-2">
+          <span className="text-xs text-[#8890b5] w-6 text-right">{i + 1}.</span>
+          <input
+            type="text"
+            value={val}
+            onChange={(e) => update(i, e.target.value)}
+            className="flex-1 border rounded-lg px-3 py-2"
+            placeholder="Nama item"
+          />
+          {/* Kirim ke server hanya jika tidak kosong */}
+          {val.trim() && <input type="hidden" name={`${name}[]`} value={val.trim()} />}
+          <button
+            type="button"
+            onClick={() => move(i, -1)}
+            disabled={i === 0}
+            className="px-2 py-1.5 border rounded text-xs disabled:opacity-30 hover:bg-gray-50"
+            title="Naik"
+          >
+            ↑
+          </button>
+          <button
+            type="button"
+            onClick={() => move(i, 1)}
+            disabled={i === items.length - 1}
+            className="px-2 py-1.5 border rounded text-xs disabled:opacity-30 hover:bg-gray-50"
+            title="Turun"
+          >
+            ↓
+          </button>
+          <button
+            type="button"
+            onClick={() => remove(i)}
+            className="px-2 py-1.5 border rounded text-xs text-red-600 hover:bg-red-50"
+            title="Hapus"
+          >
+            ✕
+          </button>
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={add}
+        className="text-sm text-accent hover:underline font-medium"
+      >
+        + Tambah item
+      </button>
     </div>
   )
 }

@@ -50,6 +50,8 @@ export default function BlockEditorForm({
             ? 'Blok ini menampilkan Jabatan Ketua & Legalitas secara otomatis dari Pengaturan Identitas. Anda hanya mengatur judulnya.'
             : type === 'identity_club'
             ? 'Blok ini menampilkan Logo, Nama Club, Judul & Isi Teks otomatis dari Pengaturan Identitas. Anda hanya mengatur posisi gambar & latar.'
+            : type === 'org_structure'
+            ? 'Blok ini menampilkan ringkasan Struktur Organisasi (pimpinan puncak) otomatis dari menu Struktur, dengan tombol "Lihat Selengkapnya" ke halaman /struktur. Anda hanya mengatur judul & latar.'
             : `Blok ini menarik data otomatis dari ${
                 type === 'gallery'
                   ? 'Galeri'
@@ -236,7 +238,7 @@ export default function BlockEditorForm({
       )}
 
       {/* Latar gelap (untuk beberapa tipe) */}
-      {['text', 'image', 'text_image', 'cards', 'legal', 'identity_club'].includes(type) && (
+      {['text', 'image', 'text_image', 'cards', 'legal', 'identity_club', 'org_structure'].includes(type) && (
         <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"

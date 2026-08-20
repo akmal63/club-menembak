@@ -4,6 +4,20 @@ import type { PageBlock } from '@/lib/blocks'
 import PublicNavbar from '@/components/public/public-navbar'
 import BlockRenderer from '@/components/public/block-renderer'
 import PublicFooter from '@/components/public/public-footer'
+import { buildTree, type OrgFlat, type OrgNode } from '@/components/public/org-chart'
+
+// Baris hasil join org_structure -> members
+type OrgRow = {
+  id: string
+  parent_id: string | null
+  role_override: string | null
+  sort_order: number
+  member: {
+    full_name: string | null
+    position: string | null
+    photo_url: string | null
+  } | null
+}
 
 export default async function PublicHomePage() {
   const supabase = await createClient()
@@ -19,13 +33,14 @@ export default async function PublicHomePage() {
     .limit(1)
     .maybeSingle()
 
-  // Ambil blok aktif (urut), galeri, berita, jadwal, kegiatan — sekaligus
+  // Ambil blok aktif (urut), galeri, berita, jadwal, kegiatan, struktur — sekaligus
   const [
     { data: blocks },
     { data: gallery },
     { data: news },
     { data: schedules },
     { data: events },
+    { data: orgData },
   ] = await Promise.all([
     supabase
       .from('page_blocks')
@@ -55,9 +70,28 @@ export default async function PublicHomePage() {
       .gte('start_date', nowIso)
       .order('start_date', { ascending: true })
       .limit(4),
+    supabase
+      .from('org_structure')
+      .select(
+        'id, parent_id, role_override, sort_order, member:members(full_name, position, photo_url)'
+      )
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true }),
   ])
 
   const list = (blocks ?? []) as PageBlock[]
+
+  // Susun pohon struktur untuk blok org_structure (ringkasan)
+  const orgRows = (orgData ?? []) as unknown as OrgRow[]
+  const orgFlat: OrgFlat[] = orgRows.map((r) => ({
+    id: r.id,
+    parent_id: r.parent_id,
+    role: (r.role_override || r.member?.position || '').trim(),
+    name: r.member?.full_name || 'Tanpa Nama',
+    photo_url: r.member?.photo_url ?? null,
+    sort_order: r.sort_order,
+  }))
+  const orgRoots: OrgNode[] = buildTree(orgFlat)
 
   return (
     <div className="bg-white">
@@ -86,6 +120,7 @@ export default async function PublicHomePage() {
             siteContent={c}
             chairmanPhoto={chairmanMember?.photo_url ?? null}
             chairmanName={chairmanMember?.full_name ?? null}
+            orgRoots={orgRoots}
           />
         ))
       )}

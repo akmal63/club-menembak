@@ -22,6 +22,9 @@ export type SiteContent = {
   copyrightText: string // teks hak cipta footer (kosong = default otomatis)
   theme: { primary: string; accent: string } // warna tema (hex)
   navMenu: NavItem[] // menu navbar publik (kosong = pakai default)
+  structureDark: boolean // latar halaman /struktur gelap (navy ikut tema) bila true, putih bila false
+  positionOptions: string[] // daftar jabatan (urutan = prioritas tampil anggota)
+  categoryOptions: string[] // daftar kategori anggota
   identityText: { label: string; body: string } // teks bebas identitas (tampil di beranda via blok)
   hero: {
     welcome: string
@@ -67,6 +70,9 @@ export const defaultContent: SiteContent = {
     { label: 'Database Anggota', url: '/anggota', enabled: true },
     { label: 'Kontak', url: '/#kontak', enabled: true },
   ],
+  structureDark: true,
+  positionOptions: ['Ketua Umum', 'Ketua Harian', 'Sekretaris', 'Bendahara', 'Anggota'],
+  categoryOptions: ['Pistol', 'Rifle', 'Shotgun', 'Lainnya'],
   identityText: { label: '', body: '' },
   hero: {
     welcome: 'Selamat Datang',
@@ -137,6 +143,15 @@ export async function getSiteContent(): Promise<SiteContent> {
         copyrightText: v.copyrightText ?? defaultContent.copyrightText,
         theme: { ...defaultContent.theme, ...v.theme },
         navMenu: v.navMenu && v.navMenu.length ? v.navMenu : defaultContent.navMenu,
+        structureDark: v.structureDark ?? defaultContent.structureDark,
+        positionOptions:
+          v.positionOptions && v.positionOptions.length
+            ? v.positionOptions
+            : defaultContent.positionOptions,
+        categoryOptions:
+          v.categoryOptions && v.categoryOptions.length
+            ? v.categoryOptions
+            : defaultContent.categoryOptions,
         identityText: { ...defaultContent.identityText, ...v.identityText },
         hero: { ...defaultContent.hero, ...v.hero },
         about: { ...defaultContent.about, ...v.about },

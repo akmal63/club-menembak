@@ -3,14 +3,19 @@ import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
 import { checkPermission } from '@/lib/permissions'
 import DeleteMemberButton from '@/components/delete-member-button'
+import { sortMembersByHierarchy, isStaleValue } from '@/lib/member-order'
+import { getSiteContent } from '@/lib/site-content'
 
 export default async function MembersPage() {
   const supabase = await createClient()
 
-  const { data: members } = await supabase
+  const { data: rawMembers } = await supabase
     .from('members')
     .select('*')
-    .order('created_at', { ascending: false })
+
+  // Urutkan: jabatan (Ketua Umum dulu ... Anggota terakhir) -> nomor registrasi.
+  const c = await getSiteContent()
+  const members = sortMembersByHierarchy(rawMembers ?? [], c.positionOptions)
 
   // Cek izin untuk menampilkan/menyembunyikan tombol aksi
   const canCreate = await checkPermission('members', 'create')
@@ -44,6 +49,7 @@ export default async function MembersPage() {
                 <th className="px-4 py-3 font-medium">No Registrasi</th>
                 <th className="px-4 py-3 font-medium">Nama</th>
                 <th className="px-4 py-3 font-medium">Jabatan</th>
+                <th className="px-4 py-3 font-medium">Kategori</th>
                 <th className="px-4 py-3 font-medium">Status</th>
                 {(canEdit || canDelete) && (
                   <th className="px-4 py-3 font-medium text-right">Aksi</th>
@@ -80,7 +86,33 @@ export default async function MembersPage() {
                       {m.full_name}
                     </Link>
                   </td>
-                  <td className="px-4 py-3">{m.position ?? '-'}</td>
+                  <td className="px-4 py-3">
+                    {m.position ?? '-'}
+                    {isStaleValue(m.position, c.positionOptions) && (
+                      <span
+                        title="Jabatan ini tidak ada di daftar. Edit anggota untuk memperbarui."
+                        className="ml-2 inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 align-middle"
+                      >
+                        data lama
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    {Array.isArray(m.category) && m.category.length > 0 ? (
+                      <div className="flex flex-wrap gap-1">
+                        {m.category.map((cat: string) => (
+                          <span
+                            key={cat}
+                            className="inline-block px-2 py-0.5 rounded-full text-[11px] font-medium bg-[color:var(--brand-accent)]/10 text-accent border border-[color:var(--brand-accent)]/20"
+                          >
+                            {cat}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-gray-400">-</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3">
                     <span
                       className={

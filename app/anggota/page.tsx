@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { getSiteContent } from '@/lib/site-content'
+import { sortMembersByHierarchy } from '@/lib/member-order'
 import PublicNavbar from '@/components/public/public-navbar'
 import PublicFooter from '@/components/public/public-footer'
 import MembersTable, { type PublicMember } from './members-table'
@@ -16,10 +17,13 @@ export default async function AnggotaPage() {
 
   const { data } = await supabase
     .from('members_public')
-    .select('id, member_number, full_name, position, status, photo_url')
-    .order('member_number', { ascending: true })
+    .select('id, member_number, full_name, position, status, photo_url, category')
 
-  const members = (data ?? []) as PublicMember[]
+  // Urutkan: jabatan (Ketua Umum dulu ... Anggota terakhir) -> nomor registrasi.
+  const members = sortMembersByHierarchy(
+    (data ?? []) as PublicMember[],
+    c.positionOptions
+  )
 
   return (
     <div className="bg-white min-h-screen">

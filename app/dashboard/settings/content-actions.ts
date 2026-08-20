@@ -98,6 +98,16 @@ export async function updateSiteContent(
     if (label && url) navMenu.push({ label, url, enabled })
   }
 
+  // Daftar jabatan & kategori (dari ListEditor, dikirim sebagai name[]).
+  const positionOptions = formData
+    .getAll('positionOptions[]')
+    .map((v) => (typeof v === 'string' ? v.trim() : ''))
+    .filter(Boolean)
+  const categoryOptions = formData
+    .getAll('categoryOptions[]')
+    .map((v) => (typeof v === 'string' ? v.trim() : ''))
+    .filter(Boolean)
+
   const content: SiteContent = {
     clubName: s(formData, 'clubName') || defaultContent.clubName,
     clubShort: s(formData, 'clubShort') || defaultContent.clubShort,
@@ -110,6 +120,13 @@ export async function updateSiteContent(
       accent: s(formData, 'theme_accent') || defaultContent.theme.accent,
     },
     navMenu: navMenu.length ? navMenu : defaultContent.navMenu,
+    structureDark: formData.get('structure_dark') === 'on',
+    positionOptions: positionOptions.length
+      ? positionOptions
+      : defaultContent.positionOptions,
+    categoryOptions: categoryOptions.length
+      ? categoryOptions
+      : defaultContent.categoryOptions,
     identityText: {
       label: s(formData, 'identity_label'),
       body: s(formData, 'identity_body'),
@@ -148,6 +165,8 @@ export async function updateSiteContent(
   // Segarkan halaman publik & pengaturan
   revalidatePath('/')
   revalidatePath('/anggota')
+  revalidatePath('/struktur')
+  revalidatePath('/dashboard/members')
   revalidatePath('/dashboard/settings/konten')
 
   return { success: 'Konten beranda berhasil diperbarui.' }

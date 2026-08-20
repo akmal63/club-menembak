@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { checkPermission } from '@/lib/permissions'
+import { getSiteContent } from '@/lib/site-content'
 import MemberForm from '@/components/member-form'
 import { createMember } from '../actions'
 
@@ -20,10 +21,17 @@ export default async function NewMemberPage() {
     )
   }
 
+  const c = await getSiteContent()
+
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">Tambah Anggota</h1>
-      <MemberForm action={createMember} submitLabel="Simpan" />
+      <MemberForm
+        action={createMember}
+        submitLabel="Simpan"
+        positionOptions={c.positionOptions}
+        categoryOptions={c.categoryOptions}
+      />
     </div>
   )
 }

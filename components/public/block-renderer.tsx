@@ -24,6 +24,7 @@ import {
 import type { PageBlock, BlockContent } from '@/lib/blocks'
 import { resolveAnchor } from '@/lib/blocks'
 import type { SiteContent } from '@/lib/site-content'
+import OrgChart, { type OrgNode } from '@/components/public/org-chart'
 import { formatDate } from '@/lib/format'
 
 // Peta key string (dari DB) -> komponen ikon lucide.
@@ -80,6 +81,7 @@ type Props = {
   siteContent?: SiteContent
   chairmanPhoto?: string | null
   chairmanName?: string | null
+  orgRoots?: OrgNode[]
 }
 
 // Jarak agar section tidak tertutup navbar yang fixed di atas.
@@ -128,6 +130,7 @@ export default function BlockRenderer({
   siteContent,
   chairmanPhoto,
   chairmanName,
+  orgRoots,
 }: Props) {
   const c = block.content
 
@@ -792,6 +795,23 @@ export default function BlockRenderer({
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+        </section>
+      )
+    }
+
+    // ===== STRUKTUR ORGANISASI (ringkas, otomatis) =====
+    case 'org_structure': {
+      const roots = orgRoots ?? []
+      if (roots.length === 0) return null
+      return (
+        <section {...sect} className={'py-20 ' + SCROLL_MT + ' ' + (c.dark ? 'bg-brand' : 'bg-[#f4f5fa]')}>
+          <div className="max-w-6xl mx-auto px-5">
+            {c.eyebrow && <Eyebrow>{c.eyebrow}</Eyebrow>}
+            <Title light={c.dark}>{c.title ?? 'Struktur Organisasi'}</Title>
+            <div className="mt-10">
+              <OrgChart roots={roots} mode="summary" />
             </div>
           </div>
         </section>

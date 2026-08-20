@@ -137,6 +137,8 @@ function buildContent(
     case 'schedules':
     case 'events':
       return { anchor, eyebrow: g('eyebrow'), title: g('title') }
+    case 'org_structure':
+      return { anchor, eyebrow: g('eyebrow'), title: g('title'), dark: on('dark') }
     default:
       return base
   }

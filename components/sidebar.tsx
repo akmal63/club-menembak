@@ -64,6 +64,11 @@ export default async function Sidebar() {
             />
           )
         })}
+        {/* Link Struktur (statis) — menumpang izin 'content'.
+            Tampil bila user boleh melihat menu konten/halaman. */}
+        {menus.some((m) => m.key === 'content' || m.key === 'pages') && (
+          <SidebarNavLink href="/dashboard/structure" iconKey="structure" label="Struktur" />
+        )}
       </nav>
 
       {/* Logout */}

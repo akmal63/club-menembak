@@ -16,6 +16,7 @@ export type BlockType =
   | 'federations'
   | 'legal'
   | 'identity_club'
+  | 'org_structure'
 
 export type BlockButton = {
   button_enabled?: boolean
@@ -68,10 +69,11 @@ export const BLOCK_LABELS: Record<BlockType, string> = {
   federations: 'Afiliasi / Federasi',
   legal: 'Legalitas & Ketua (otomatis)',
   identity_club: 'Identitas Club (otomatis)',
+  org_structure: 'Struktur Organisasi (ringkas)',
 }
 
 // Tipe yang menarik data dari tabel lain / pengaturan (tak punya konten teks utama)
-export const AUTO_TYPES: BlockType[] = ['gallery', 'news', 'schedules', 'events', 'legal', 'identity_club']
+export const AUTO_TYPES: BlockType[] = ['gallery', 'news', 'schedules', 'events', 'legal', 'identity_club', 'org_structure']
 
 // ID section bawaan tiap tipe (dipakai bila admin tidak mengisi anchor manual)
 export const DEFAULT_ANCHORS: Partial<Record<BlockType, string>> = {
@@ -81,6 +83,7 @@ export const DEFAULT_ANCHORS: Partial<Record<BlockType, string>> = {
   schedules: 'jadwal',
   events: 'kegiatan',
   legal: 'legalitas',
+  org_structure: 'struktur',
 }
 
 // Ubah teks bebas menjadi ID yang aman untuk anchor (huruf kecil, tanpa spasi/simbol)

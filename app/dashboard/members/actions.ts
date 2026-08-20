@@ -25,7 +25,10 @@ function parseForm(formData: FormData) {
     active_until: get('active_until'),
     position: get('position'),
     occupation: get('occupation'),
-    category: get('category'),
+    category: formData
+      .getAll('category[]')
+      .map((v) => (typeof v === 'string' ? v.trim() : ''))
+      .filter(Boolean),
     status: get('status') ?? 'active',
     notes: get('notes'),
   }

@@ -14,6 +14,7 @@ const TYPE_ORDER: BlockType[] = [
   'federations',
   'legal',
   'identity_club',
+  'org_structure',
   'gallery',
   'news',
   'schedules',

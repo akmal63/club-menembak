@@ -12,6 +12,7 @@ import {
   LayoutTemplate,
   FileText,
   Settings,
+  Network,
 } from 'lucide-react'
 
 const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -24,6 +25,7 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   content: LayoutTemplate,
   pages: FileText,
   settings: Settings,
+  structure: Network,
 }
 
 export default function SidebarNavLink({
