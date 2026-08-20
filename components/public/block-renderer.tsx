@@ -1,10 +1,51 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { Target, ArrowRight, Calendar, Award, FileText } from 'lucide-react'
+import {
+  Target,
+  ArrowRight,
+  Calendar,
+  Award,
+  FileText,
+  Rocket,
+  ShieldCheck,
+  Flag,
+  Gem,
+  Users,
+  Zap,
+  Star,
+  Heart,
+  Trophy,
+  Crosshair,
+  Eye,
+  Compass,
+  Flame,
+  type LucideIcon,
+} from 'lucide-react'
 import type { PageBlock, BlockContent } from '@/lib/blocks'
 import { resolveAnchor } from '@/lib/blocks'
 import type { SiteContent } from '@/lib/site-content'
 import { formatDate } from '@/lib/format'
+
+// Peta key string (dari DB) -> komponen ikon lucide.
+// Server component boleh memakai komponen ikon langsung di sini,
+// yang dilarang hanyalah MENGOPER komponen sebagai prop ke client component.
+const CARD_ICONS: Record<string, LucideIcon> = {
+  target: Target,
+  rocket: Rocket,
+  'shield-check': ShieldCheck,
+  flag: Flag,
+  gem: Gem,
+  award: Award,
+  users: Users,
+  zap: Zap,
+  star: Star,
+  heart: Heart,
+  trophy: Trophy,
+  crosshair: Crosshair,
+  eye: Eye,
+  compass: Compass,
+  flame: Flame,
+}
 
 type GalleryPhoto = { id: string; title: string | null; image_url: string }
 type NewsItem = {
@@ -271,27 +312,73 @@ export default function BlockRenderer({
             {c.eyebrow && <Eyebrow>{c.eyebrow}</Eyebrow>}
             {c.title && <Title light={c.dark}>{c.title}</Title>}
             <div className="grid md:grid-cols-3 gap-6 mt-8">
-              {(c.cards ?? []).map((card, i) => (
-                <div
-                  key={i}
-                  className={
-                    'rounded-xl p-7 border-b-[3px] border-accent ' +
-                    (c.dark ? 'bg-brand-soft' : 'bg-white shadow-[0_4px_14px_rgba(10,14,39,0.06)]')
-                  }
-                >
-                  <h3
+              {(c.cards ?? []).map((card, i) => {
+                // Ikon opsional: ambil komponen dari peta bila key valid.
+                const Icon = card.icon ? CARD_ICONS[card.icon] : null
+                // Deteksi chip: jika isi berupa daftar dipisah koma (>=2 item),
+                // tampilkan sebagai badge. Jika kalimat biasa, tampil sebagai paragraf.
+                const parts = (card.body ?? '')
+                  .split(',')
+                  .map((s) => s.trim())
+                  .filter(Boolean)
+                const asChips = parts.length >= 2
+                return (
+                  <div
+                    key={i}
                     className={
-                      'font-display text-xl font-bold uppercase tracking-wide mb-3 ' +
-                      (c.dark ? 'text-white' : 'text-[#0a0e27]')
+                      'rounded-xl p-7 border-b-[3px] border-accent ' +
+                      (c.dark ? 'bg-brand-soft' : 'bg-white shadow-[0_4px_14px_rgba(10,14,39,0.06)]')
                     }
                   >
-                    {card.title}
-                  </h3>
-                  <p className={c.dark ? 'text-[#8890b5] text-sm' : 'text-[#3a3f5c] text-sm'}>
-                    {card.body}
-                  </p>
-                </div>
-              ))}
+                    {Icon && (
+                      <div
+                        className="w-12 h-12 rounded-xl grid place-items-center mb-4"
+                        style={{
+                          backgroundColor:
+                            'color-mix(in srgb, var(--brand-accent) 12%, transparent)',
+                        }}
+                      >
+                        <Icon className="w-6 h-6 text-accent" strokeWidth={2} />
+                      </div>
+                    )}
+                    <h3 className="font-display text-xl font-bold uppercase tracking-wide mb-3 text-accent">
+                      {card.title}
+                    </h3>
+                    {asChips ? (
+                      <div className="flex flex-wrap gap-2">
+                        {parts.map((p, j) => (
+                          <span
+                            key={j}
+                            className={
+                              'text-xs font-medium px-3 py-1.5 rounded-full border ' +
+                              (c.dark ? 'text-[#cdd2e8]' : 'text-[#3a3f5c]')
+                            }
+                            style={
+                              c.dark
+                                ? {
+                                    backgroundColor: 'rgba(255,255,255,0.06)',
+                                    borderColor: 'rgba(255,255,255,0.10)',
+                                  }
+                                : {
+                                    backgroundColor:
+                                      'color-mix(in srgb, var(--brand-accent) 7%, transparent)',
+                                    borderColor:
+                                      'color-mix(in srgb, var(--brand-accent) 22%, transparent)',
+                                  }
+                            }
+                          >
+                            {p}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className={c.dark ? 'text-[#8890b5] text-sm' : 'text-[#3a3f5c] text-sm'}>
+                        {card.body}
+                      </p>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </div>
         </section>

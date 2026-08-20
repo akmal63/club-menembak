@@ -95,11 +95,12 @@ function buildContent(
         image_fit: (g('image_fit') as 'cover' | 'contain') || 'cover',
       }
     case 'cards': {
-      const cards: { title: string; body: string }[] = []
+      const cards: { title: string; body: string; icon: string }[] = []
       for (let i = 0; i < 6; i++) {
         const t = g(`card_title_${i}`)
         const b = g(`card_body_${i}`)
-        if (t || b) cards.push({ title: t, body: b })
+        const icon = g(`card_icon_${i}`)
+        if (t || b) cards.push({ title: t, body: b, icon })
       }
       return { ...base, eyebrow: g('eyebrow'), title: g('title'), cards }
     }

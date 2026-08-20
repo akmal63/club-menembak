@@ -3,7 +3,7 @@
 import { useActionState, useState } from 'react'
 import Link from 'next/link'
 import type { BlockType, BlockContent } from '@/lib/blocks'
-import { AUTO_TYPES } from '@/lib/blocks'
+import { AUTO_TYPES, CARD_ICON_KEYS, CARD_ICON_LABELS } from '@/lib/blocks'
 import type { BlockState } from '@/app/dashboard/content/actions'
 import ImageInput from '@/components/image-input'
 
@@ -159,6 +159,11 @@ export default function BlockEditorForm({
       {showCards && (
         <div className="space-y-3">
           <p className="text-sm font-medium text-[#8890b5]">Kartu (isi hingga 3)</p>
+          <p className="text-xs text-[#8890b5] bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+            Tips: pada Isi Kartu, jika Anda menulis daftar dipisah koma (mis.
+            <b> Teamwork, Inovasi, Integritas</b>), otomatis tampil sebagai badge/chip.
+            Jika kalimat biasa, tampil sebagai paragraf.
+          </p>
           {[0, 1, 2].map((i) => (
             <div key={i} className="border rounded-lg p-3 space-y-2">
               <Field
@@ -166,6 +171,21 @@ export default function BlockEditorForm({
                 name={`card_title_${i}`}
                 defaultValue={c.cards?.[i]?.title}
               />
+              <div>
+                <label className="block text-sm font-medium mb-1">Ikon Kartu {i + 1}</label>
+                <select
+                  name={`card_icon_${i}`}
+                  defaultValue={c.cards?.[i]?.icon ?? ''}
+                  className="w-full border rounded-lg px-3 py-2 bg-white"
+                >
+                  <option value="">— Tanpa ikon —</option>
+                  {CARD_ICON_KEYS.map((k) => (
+                    <option key={k} value={k}>
+                      {CARD_ICON_LABELS[k]}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <Area
                 label={`Isi Kartu ${i + 1}`}
                 name={`card_body_${i}`}
