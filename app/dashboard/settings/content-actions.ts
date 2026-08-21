@@ -115,6 +115,7 @@ export async function updateSiteContent(
     location: s(formData, 'location'),
     logoUrl,
     copyrightText: s(formData, 'copyright_text'),
+    footerTagline: s(formData, 'footer_tagline'),
     theme: {
       primary: s(formData, 'theme_primary') || defaultContent.theme.primary,
       accent: s(formData, 'theme_accent') || defaultContent.theme.accent,

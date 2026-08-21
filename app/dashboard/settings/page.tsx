@@ -1,9 +1,9 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { updatePermissions } from './actions'
 import CreateAccountForm from '@/components/create-account-form'
 import DeleteAccountButton from '@/components/delete-account-button'
+import PermissionsForm, { type PermissionRow } from '@/components/permissions-form'
 import Tabs from '@/components/tabs'
 
 export default async function SettingsPage() {
@@ -37,10 +37,15 @@ export default async function SettingsPage() {
     .select('id, permission_id, can_view, can_create, can_edit, can_delete, permissions(menu_key, label, sort_order)')
     .eq('role_id', adminRole.id)
 
-  const rows = (perms ?? [])
+  const rows: PermissionRow[] = (perms ?? [])
     .map((p) => ({
-      ...p,
-      menu: p.permissions as any,
+      id: p.id,
+      permission_id: p.permission_id,
+      can_view: p.can_view,
+      can_create: p.can_create,
+      can_edit: p.can_edit,
+      can_delete: p.can_delete,
+      menu: p.permissions as PermissionRow['menu'],
     }))
     .sort((a, b) => (a.menu?.sort_order ?? 0) - (b.menu?.sort_order ?? 0))
 
@@ -120,41 +125,7 @@ export default async function SettingsPage() {
         Centang untuk memberi izin, hapus centang untuk mencabut.
       </p>
 
-      <form action={updatePermissions}>
-        <input type="hidden" name="role_id" value={adminRole.id} />
-
-        <div className="bg-white rounded-xl shadow border overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left">
-              <tr>
-                <th className="px-4 py-3 font-medium">Menu</th>
-                <th className="px-4 py-3 font-medium text-center">Lihat</th>
-                <th className="px-4 py-3 font-medium text-center">Tambah</th>
-                <th className="px-4 py-3 font-medium text-center">Edit</th>
-                <th className="px-4 py-3 font-medium text-center">Hapus</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => (
-                <tr key={r.id} className="border-t">
-                  <td className="px-4 py-3 font-medium">{r.menu?.label}</td>
-                  <Checkbox pid={r.permission_id} action="view" checked={r.can_view} />
-                  <Checkbox pid={r.permission_id} action="create" checked={r.can_create} />
-                  <Checkbox pid={r.permission_id} action="edit" checked={r.can_edit} />
-                  <Checkbox pid={r.permission_id} action="delete" checked={r.can_delete} />
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <button
-          type="submit"
-          className="mt-5 bg-accent text-white px-6 py-2 rounded-lg hover:opacity-90 font-display font-semibold uppercase tracking-wide"
-        >
-          Simpan Perubahan
-        </button>
-      </form>
+      <PermissionsForm rows={rows} roleId={adminRole.id} />
 
       <p className="text-xs text-gray-500 mt-4">
         Catatan: perubahan berlaku setelah Admin memuat ulang halaman mereka.
@@ -214,26 +185,5 @@ export default async function SettingsPage() {
         ]}
       />
     </div>
-  )
-}
-
-function Checkbox({
-  pid,
-  action,
-  checked,
-}: {
-  pid: number
-  action: string
-  checked: boolean
-}) {
-  return (
-    <td className="px-4 py-3 text-center">
-      <input
-        type="checkbox"
-        name={`perm-${pid}-${action}`}
-        defaultChecked={checked}
-        className="w-4 h-4 accent-[#ff5e3a]"
-      />
-    </td>
   )
 }

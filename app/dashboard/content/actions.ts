@@ -2,8 +2,8 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { checkPermission } from '@/lib/permissions'
-import type { BlockType, BlockContent } from '@/lib/blocks'
-import { AUTO_TYPES, slugifyAnchor } from '@/lib/blocks'
+import type { BlockType, BlockContent, BlockBg } from '@/lib/blocks'
+import { AUTO_TYPES, BG_TYPES, slugifyAnchor } from '@/lib/blocks'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
@@ -51,6 +51,17 @@ function buildContent(
   const rawAnchor = g('anchor')
   const anchor = rawAnchor ? slugifyAnchor(rawAnchor) : ''
 
+  // Warna latar (poin 7). Hanya untuk tipe yang menyediakannya; selain itu abaikan.
+  // Nilai valid: theme | white | gray. Default 'white' bila tak dikirim.
+  const bgRaw = g('bg')
+  const bg: BlockBg | undefined = BG_TYPES.includes(type)
+    ? bgRaw === 'theme' || bgRaw === 'gray' || bgRaw === 'white'
+      ? bgRaw
+      : 'white'
+    : undefined
+  // Kompatibilitas: pertahankan `dark` konsisten dengan pilihan bg (theme = gelap).
+  const darkFromBg = bg ? bg === 'theme' : on('dark')
+
   // Tentukan URL gambar akhir: gambar baru > (jika dihapus) kosong > existing
   const resolveImage = (existingKey: string, removeKey: string) => {
     if (imageUrl) return imageUrl
@@ -63,7 +74,8 @@ function buildContent(
     button_enabled: on('button_enabled'),
     button_text: g('button_text'),
     button_link: g('button_link'),
-    dark: on('dark'),
+    dark: darkFromBg,
+    ...(bg ? { bg } : {}),
   }
 
   switch (type) {
@@ -122,23 +134,50 @@ function buildContent(
     }
     case 'legal':
       // Data (ketua & legalitas) ditarik otomatis dari Pengaturan Identitas.
-      // Admin hanya mengatur judul, eyebrow, latar gelap, dan ID section.
-      return { anchor, eyebrow: g('eyebrow'), title: g('title'), dark: on('dark') }
-    case 'identity_club':
-      // Logo + nama club + judul & isi teks ditarik otomatis dari Pengaturan Identitas.
-      // Admin mengatur posisi gambar (kiri/kanan), latar, dan ID section.
+      // Admin hanya mengatur judul, eyebrow, warna latar, dan ID section.
       return {
         anchor,
-        dark: on('dark'),
+        eyebrow: g('eyebrow'),
+        title: g('title'),
+        dark: darkFromBg,
+        ...(bg ? { bg } : {}),
+      }
+    case 'identity_club':
+      // Logo + nama club + judul & isi teks ditarik otomatis dari Pengaturan Identitas.
+      // Admin mengatur posisi gambar (kiri/kanan), warna latar, dan ID section.
+      return {
+        anchor,
+        dark: darkFromBg,
+        ...(bg ? { bg } : {}),
         image_side: (g('image_side') as 'left' | 'right') || 'right',
       }
     case 'gallery':
     case 'news':
+      // Kini menyediakan pilihan warna latar (bg).
+      return {
+        anchor,
+        eyebrow: g('eyebrow'),
+        title: g('title'),
+        dark: darkFromBg,
+        ...(bg ? { bg } : {}),
+      }
     case 'schedules':
     case 'events':
-      return { anchor, eyebrow: g('eyebrow'), title: g('title') }
+      return {
+        anchor,
+        eyebrow: g('eyebrow'),
+        title: g('title'),
+        dark: darkFromBg,
+        ...(bg ? { bg } : {}),
+      }
     case 'org_structure':
-      return { anchor, eyebrow: g('eyebrow'), title: g('title'), dark: on('dark') }
+      return {
+        anchor,
+        eyebrow: g('eyebrow'),
+        title: g('title'),
+        dark: darkFromBg,
+        ...(bg ? { bg } : {}),
+      }
     default:
       return base
   }

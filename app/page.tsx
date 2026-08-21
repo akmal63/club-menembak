@@ -4,19 +4,19 @@ import type { PageBlock } from '@/lib/blocks'
 import PublicNavbar from '@/components/public/public-navbar'
 import BlockRenderer from '@/components/public/block-renderer'
 import PublicFooter from '@/components/public/public-footer'
+import BackToTop from '@/components/public/back-to-top'
 import { buildTree, type OrgFlat, type OrgNode } from '@/components/public/org-chart'
+import { pickTopMember } from '@/lib/member-order'
 
-// Baris hasil join org_structure -> members
+// Baris hasil view org_structure_public (sudah digabung dengan members_public).
 type OrgRow = {
   id: string
   parent_id: string | null
   role_override: string | null
   sort_order: number
-  member: {
-    full_name: string | null
-    position: string | null
-    photo_url: string | null
-  } | null
+  member_full_name: string | null
+  member_position: string | null
+  member_photo_url: string | null
 }
 
 export default async function PublicHomePage() {
@@ -25,15 +25,8 @@ export default async function PublicHomePage() {
 
   const nowIso = new Date().toISOString()
 
-  // Ambil foto ketua (anggota dengan jabatan 'Ketua') untuk blok legalitas
-  const { data: chairmanMember } = await supabase
-    .from('members_public')
-    .select('full_name, photo_url, position')
-    .ilike('position', 'ketua')
-    .limit(1)
-    .maybeSingle()
-
-  // Ambil blok aktif (urut), galeri, berita, jadwal, kegiatan, struktur — sekaligus
+  // Ambil blok aktif (urut), galeri, berita, jadwal, kegiatan, struktur,
+  // + kandidat pimpinan puncak untuk blok legalitas — sekaligus.
   const [
     { data: blocks },
     { data: gallery },
@@ -41,6 +34,7 @@ export default async function PublicHomePage() {
     { data: schedules },
     { data: events },
     { data: orgData },
+    { data: leaderCandidates },
   ] = await Promise.all([
     supabase
       .from('page_blocks')
@@ -70,13 +64,19 @@ export default async function PublicHomePage() {
       .gte('start_date', nowIso)
       .order('start_date', { ascending: true })
       .limit(4),
+    // Struktur: baca dari VIEW publik agar nama/foto tetap muncul untuk anonim.
     supabase
-      .from('org_structure')
+      .from('org_structure_public')
       .select(
-        'id, parent_id, role_override, sort_order, member:members(full_name, position, photo_url)'
+        'id, parent_id, role_override, sort_order, member_full_name, member_position, member_photo_url'
       )
       .eq('is_active', true)
       .order('sort_order', { ascending: true }),
+    // Kandidat pimpinan puncak: seluruh anggota (view publik) + jabatannya,
+    // lalu dipilih yang jabatannya paling atas menurut positionOptions.
+    supabase
+      .from('members_public')
+      .select('full_name, photo_url, position, member_number'),
   ])
 
   const list = (blocks ?? []) as PageBlock[]
@@ -86,12 +86,23 @@ export default async function PublicHomePage() {
   const orgFlat: OrgFlat[] = orgRows.map((r) => ({
     id: r.id,
     parent_id: r.parent_id,
-    role: (r.role_override || r.member?.position || '').trim(),
-    name: r.member?.full_name || 'Tanpa Nama',
-    photo_url: r.member?.photo_url ?? null,
+    role: (r.role_override || r.member_position || '').trim(),
+    name: r.member_full_name || 'Tanpa Nama',
+    photo_url: r.member_photo_url ?? null,
     sort_order: r.sort_order,
   }))
   const orgRoots: OrgNode[] = buildTree(orgFlat)
+
+  // Pimpinan puncak untuk blok legalitas — anti-rapuh terhadap nama jabatan.
+  // Mengikuti urutan positionOptions (jabatan teratas = pimpinan).
+  type LeaderRow = {
+    full_name: string | null
+    photo_url: string | null
+    position: string | null
+    member_number: string | null
+  }
+  const leaders = (leaderCandidates ?? []) as LeaderRow[]
+  const topLeader = pickTopMember(leaders, c.positionOptions ?? [])
 
   return (
     <div className="bg-white">
@@ -118,14 +129,18 @@ export default async function PublicHomePage() {
             schedules={schedules ?? []}
             events={events ?? []}
             siteContent={c}
-            chairmanPhoto={chairmanMember?.photo_url ?? null}
-            chairmanName={chairmanMember?.full_name ?? null}
+            chairmanPhoto={topLeader?.photo_url ?? null}
+            chairmanName={topLeader?.full_name ?? null}
+            chairmanRole={topLeader?.position ?? null}
             orgRoots={orgRoots}
           />
         ))
       )}
 
       <PublicFooter content={c} />
+
+      {/* Tombol gulir ke atas (muncul saat menggulir turun) */}
+      <BackToTop />
     </div>
   )
 }

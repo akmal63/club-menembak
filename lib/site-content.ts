@@ -20,6 +20,7 @@ export type SiteContent = {
   location: string
   logoUrl: string // URL logo club (kosong = pakai ikon bawaan)
   copyrightText: string // teks hak cipta footer (kosong = default otomatis)
+  footerTagline: string // teks deskripsi singkat di footer (kosong = pakai default)
   theme: { primary: string; accent: string } // warna tema (hex)
   navMenu: NavItem[] // menu navbar publik (kosong = pakai default)
   structureDark: boolean // latar halaman /struktur gelap (navy ikut tema) bila true, putih bila false
@@ -52,6 +53,10 @@ export type SiteContent = {
   partners: Partner[]
 }
 
+// Teks default untuk deskripsi footer (dipakai bila footerTagline kosong).
+export const DEFAULT_FOOTER_TAGLINE =
+  'Perkumpulan terbuka bagi semua orang yang ingin menyalurkan bakat, hobi, maupun kreativitas di bidang olahraga menembak.'
+
 // ===== Nilai default (dipakai jika belum ada di database) =====
 export const defaultContent: SiteContent = {
   clubName: 'Perbakin Shooting Club',
@@ -60,6 +65,7 @@ export const defaultContent: SiteContent = {
   location: 'Shooting Range Makassar, Sulawesi Selatan',
   logoUrl: '',
   copyrightText: '',
+  footerTagline: '',
   theme: { primary: '#0a0e27', accent: '#ff5e3a' },
   navMenu: [
     { label: 'Beranda', url: '/#beranda', enabled: true },
@@ -141,6 +147,7 @@ export async function getSiteContent(): Promise<SiteContent> {
         ...v,
         logoUrl: v.logoUrl ?? defaultContent.logoUrl,
         copyrightText: v.copyrightText ?? defaultContent.copyrightText,
+        footerTagline: v.footerTagline ?? defaultContent.footerTagline,
         theme: { ...defaultContent.theme, ...v.theme },
         navMenu: v.navMenu && v.navMenu.length ? v.navMenu : defaultContent.navMenu,
         structureDark: v.structureDark ?? defaultContent.structureDark,

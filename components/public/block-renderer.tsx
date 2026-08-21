@@ -21,8 +21,8 @@ import {
   Flame,
   type LucideIcon,
 } from 'lucide-react'
-import type { PageBlock, BlockContent } from '@/lib/blocks'
-import { resolveAnchor } from '@/lib/blocks'
+import type { PageBlock, BlockContent, BlockBg } from '@/lib/blocks'
+import { resolveAnchor, resolveBg } from '@/lib/blocks'
 import type { SiteContent } from '@/lib/site-content'
 import OrgChart, { type OrgNode } from '@/components/public/org-chart'
 import { formatDate } from '@/lib/format'
@@ -81,11 +81,25 @@ type Props = {
   siteContent?: SiteContent
   chairmanPhoto?: string | null
   chairmanName?: string | null
+  chairmanRole?: string | null
   orgRoots?: OrgNode[]
 }
 
 // Jarak agar section tidak tertutup navbar yang fixed di atas.
 const SCROLL_MT = 'scroll-mt-24'
+
+// ============================================================
+//  WARNA LATAR SECTION (poin 7)
+//  Petakan pilihan bg -> kelas latar. `isDark` menentukan warna teks.
+// ============================================================
+function bgClass(bg: BlockBg): string {
+  if (bg === 'theme') return 'bg-brand'
+  if (bg === 'gray') return 'bg-[#f4f5fa]'
+  return 'bg-white'
+}
+function isDark(bg: BlockBg): boolean {
+  return bg === 'theme'
+}
 
 // Tombol opsional (dipakai beberapa tipe)
 function BlockButton({ c }: { c: BlockContent }) {
@@ -130,6 +144,7 @@ export default function BlockRenderer({
   siteContent,
   chairmanPhoto,
   chairmanName,
+  chairmanRole,
   orgRoots,
 }: Props) {
   const c = block.content
@@ -139,8 +154,13 @@ export default function BlockRenderer({
   // Properti yang dipasang ke setiap <section> agar bisa dituju menu navbar.
   const sect = anchor ? { id: anchor } : {}
 
+  // Warna latar final (poin 7). Untuk tipe berlatar khusus (hero/cta/gallery/news)
+  // nilai ini tidak dipakai; tipe lain memakainya.
+  const bg = resolveBg(c)
+  const dark = isDark(bg)
+
   switch (block.type) {
-    // ===== HERO =====
+    // ===== HERO ===== (latar tetap navy)
     case 'hero':
       return (
         <section
@@ -189,15 +209,15 @@ export default function BlockRenderer({
     // ===== TEKS SAJA =====
     case 'text':
       return (
-        <section {...sect} className={'py-20 ' + SCROLL_MT + ' ' + (c.dark ? 'bg-brand' : 'bg-white')}>
+        <section {...sect} className={'py-20 ' + SCROLL_MT + ' ' + bgClass(bg)}>
           <div className="max-w-3xl mx-auto px-5 text-center">
             {c.eyebrow && <Eyebrow>{c.eyebrow}</Eyebrow>}
-            {c.title && <Title light={c.dark}>{c.title}</Title>}
+            {c.title && <Title light={dark}>{c.title}</Title>}
             {c.body && (
               <p
                 className={
                   'text-lg leading-relaxed mt-6 whitespace-pre-line ' +
-                  (c.dark ? 'text-[#8890b5]' : 'text-[#3a3f5c]')
+                  (dark ? 'text-[#8890b5]' : 'text-[#3a3f5c]')
                 }
               >
                 {c.body}
@@ -216,9 +236,9 @@ export default function BlockRenderer({
     case 'image':
       if (!c.image_url) return null
       return (
-        <section {...sect} className={'py-20 ' + SCROLL_MT + ' ' + (c.dark ? 'bg-brand' : 'bg-white')}>
+        <section {...sect} className={'py-20 ' + SCROLL_MT + ' ' + bgClass(bg)}>
           <div className="max-w-5xl mx-auto px-5">
-            {c.title && <Title light={c.dark}>{c.title}</Title>}
+            {c.title && <Title light={dark}>{c.title}</Title>}
             {c.image_fit === 'contain' ? (
               <div className="mt-6 flex justify-center">
                 <Image
@@ -249,17 +269,17 @@ export default function BlockRenderer({
     case 'text_image': {
       const imgLeft = c.image_side === 'left'
       return (
-        <section {...sect} className={'py-20 ' + SCROLL_MT + ' ' + (c.dark ? 'bg-brand' : 'bg-white')}>
+        <section {...sect} className={'py-20 ' + SCROLL_MT + ' ' + bgClass(bg)}>
           <div className="max-w-6xl mx-auto px-5">
             {c.eyebrow && <Eyebrow>{c.eyebrow}</Eyebrow>}
-            {c.title && <Title light={c.dark}>{c.title}</Title>}
+            {c.title && <Title light={dark}>{c.title}</Title>}
             <div className="grid md:grid-cols-2 gap-10 items-center mt-8">
               <div className={imgLeft ? 'md:order-2' : ''}>
                 {c.body && (
                   <p
                     className={
                       'text-lg leading-relaxed whitespace-pre-line ' +
-                      (c.dark ? 'text-[#8890b5]' : 'text-[#3a3f5c]')
+                      (dark ? 'text-[#8890b5]' : 'text-[#3a3f5c]')
                     }
                   >
                     {c.body}
@@ -310,27 +330,20 @@ export default function BlockRenderer({
     // ===== KARTU BERJAJAR =====
     case 'cards':
       return (
-        <section {...sect} className={'py-20 ' + SCROLL_MT + ' ' + (c.dark ? 'bg-brand' : 'bg-white')}>
+        <section {...sect} className={'py-20 ' + SCROLL_MT + ' ' + bgClass(bg)}>
           <div className="max-w-6xl mx-auto px-5">
             {c.eyebrow && <Eyebrow>{c.eyebrow}</Eyebrow>}
-            {c.title && <Title light={c.dark}>{c.title}</Title>}
+            {c.title && <Title light={dark}>{c.title}</Title>}
             <div className="grid md:grid-cols-3 gap-6 mt-8">
               {(c.cards ?? []).map((card, i) => {
                 // Ikon opsional: ambil komponen dari peta bila key valid.
                 const Icon = card.icon ? CARD_ICONS[card.icon] : null
-                // Deteksi chip: jika isi berupa daftar dipisah koma (>=2 item),
-                // tampilkan sebagai badge. Jika kalimat biasa, tampil sebagai paragraf.
-                const parts = (card.body ?? '')
-                  .split(',')
-                  .map((s) => s.trim())
-                  .filter(Boolean)
-                const asChips = parts.length >= 2
                 return (
                   <div
                     key={i}
                     className={
                       'rounded-xl p-7 border-b-[3px] border-accent ' +
-                      (c.dark ? 'bg-brand-soft' : 'bg-white shadow-[0_4px_14px_rgba(10,14,39,0.06)]')
+                      (dark ? 'bg-brand-soft' : 'bg-white shadow-[0_4px_14px_rgba(10,14,39,0.06)]')
                     }
                   >
                     {Icon && (
@@ -347,35 +360,14 @@ export default function BlockRenderer({
                     <h3 className="font-display text-xl font-bold uppercase tracking-wide mb-3 text-accent">
                       {card.title}
                     </h3>
-                    {asChips ? (
-                      <div className="flex flex-wrap gap-2">
-                        {parts.map((p, j) => (
-                          <span
-                            key={j}
-                            className={
-                              'text-xs font-medium px-3 py-1.5 rounded-full border ' +
-                              (c.dark ? 'text-[#cdd2e8]' : 'text-[#3a3f5c]')
-                            }
-                            style={
-                              c.dark
-                                ? {
-                                    backgroundColor: 'rgba(255,255,255,0.06)',
-                                    borderColor: 'rgba(255,255,255,0.10)',
-                                  }
-                                : {
-                                    backgroundColor:
-                                      'color-mix(in srgb, var(--brand-accent) 7%, transparent)',
-                                    borderColor:
-                                      'color-mix(in srgb, var(--brand-accent) 22%, transparent)',
-                                  }
-                            }
-                          >
-                            {p}
-                          </span>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className={c.dark ? 'text-[#8890b5] text-sm' : 'text-[#3a3f5c] text-sm'}>
+                    {/* Poin 4: isi kartu selalu tampil sebagai teks biasa (tanpa chip). */}
+                    {card.body && (
+                      <p
+                        className={
+                          'text-sm whitespace-pre-line ' +
+                          (dark ? 'text-[#8890b5]' : 'text-[#3a3f5c]')
+                        }
+                      >
                         {card.body}
                       </p>
                     )}
@@ -387,10 +379,10 @@ export default function BlockRenderer({
         </section>
       )
 
-    // ===== CTA / SOROTAN =====
+    // ===== CTA / SOROTAN ===== (latar section bisa dipilih; kartu grad-brand)
     case 'cta':
       return (
-        <section {...sect} className={'py-20 bg-white ' + SCROLL_MT}>
+        <section {...sect} className={'py-20 ' + SCROLL_MT + ' ' + bgClass(bg)}>
           <div className="max-w-5xl mx-auto px-5">
             <div className="rounded-2xl grad-brand p-10 md:p-14 text-center">
               {c.eyebrow && (
@@ -412,13 +404,13 @@ export default function BlockRenderer({
         </section>
       )
 
-    // ===== GALERI (otomatis) =====
+    // ===== GALERI (otomatis) ===== (latar section bisa dipilih)
     case 'gallery':
       return (
-        <section {...sect} className={'py-20 bg-white ' + SCROLL_MT}>
+        <section {...sect} className={'py-20 ' + SCROLL_MT + ' ' + bgClass(bg)}>
           <div className="max-w-6xl mx-auto px-5">
             {c.eyebrow && <Eyebrow>{c.eyebrow}</Eyebrow>}
-            <Title>{c.title ?? 'Galeri'}</Title>
+            <Title light={dark}>{c.title ?? 'Galeri'}</Title>
             {!gallery || gallery.length === 0 ? (
               <p className="text-center text-[#8890b5] mt-8">Belum ada foto.</p>
             ) : (
@@ -441,13 +433,13 @@ export default function BlockRenderer({
         </section>
       )
 
-    // ===== BERITA (otomatis) =====
+    // ===== BERITA (otomatis) ===== (latar section bisa dipilih; default abu-abu)
     case 'news':
       return (
-        <section {...sect} className={'py-20 bg-[#f4f5fa] ' + SCROLL_MT}>
+        <section {...sect} className={'py-20 ' + SCROLL_MT + ' ' + bgClass(bg)}>
           <div className="max-w-6xl mx-auto px-5">
             {c.eyebrow && <Eyebrow>{c.eyebrow}</Eyebrow>}
-            <Title>{c.title ?? 'Berita Terbaru'}</Title>
+            <Title light={dark}>{c.title ?? 'Berita Terbaru'}</Title>
             {!news || news.length === 0 ? (
               <p className="text-center text-[#8890b5] mt-8">Belum ada berita.</p>
             ) : (
@@ -506,10 +498,10 @@ export default function BlockRenderer({
     // ===== JADWAL LATIHAN (otomatis) =====
     case 'schedules':
       return (
-        <section {...sect} className={'py-20 ' + SCROLL_MT + ' ' + (c.dark ? 'bg-brand' : 'bg-white')}>
+        <section {...sect} className={'py-20 ' + SCROLL_MT + ' ' + bgClass(bg)}>
           <div className="max-w-4xl mx-auto px-5">
             {c.eyebrow && <Eyebrow>{c.eyebrow}</Eyebrow>}
-            <Title light={c.dark}>{c.title ?? 'Jadwal Latihan'}</Title>
+            <Title light={dark}>{c.title ?? 'Jadwal Latihan'}</Title>
             {!schedules || schedules.length === 0 ? (
               <p className="text-center text-[#8890b5] mt-8">Belum ada jadwal latihan mendatang.</p>
             ) : (
@@ -521,7 +513,7 @@ export default function BlockRenderer({
                       key={s.id}
                       className={
                         'flex gap-4 items-center rounded-xl p-4 ' +
-                        (c.dark ? 'bg-brand-soft' : 'bg-white shadow-[0_4px_14px_rgba(10,14,39,0.06)]')
+                        (dark ? 'bg-brand-soft' : 'bg-white shadow-[0_4px_14px_rgba(10,14,39,0.06)]')
                       }
                     >
                       <div className="w-14 h-14 rounded-lg grid place-items-center text-white shrink-0 grad-accent">
@@ -531,7 +523,7 @@ export default function BlockRenderer({
                         </span>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className={'font-semibold truncate ' + (c.dark ? 'text-white' : 'text-[#0a0e27]')}>
+                        <p className={'font-semibold truncate ' + (dark ? 'text-white' : 'text-[#0a0e27]')}>
                           {s.title}
                         </p>
                         <p className="text-xs text-[#8890b5]">
@@ -552,10 +544,10 @@ export default function BlockRenderer({
     // ===== JADWAL KEGIATAN (otomatis) =====
     case 'events':
       return (
-        <section {...sect} className={'py-20 ' + SCROLL_MT + ' ' + (c.dark ? 'bg-brand' : 'bg-[#f4f5fa]')}>
+        <section {...sect} className={'py-20 ' + SCROLL_MT + ' ' + bgClass(bg)}>
           <div className="max-w-6xl mx-auto px-5">
             {c.eyebrow && <Eyebrow>{c.eyebrow}</Eyebrow>}
-            <Title light={c.dark}>{c.title ?? 'Jadwal Kegiatan'}</Title>
+            <Title light={dark}>{c.title ?? 'Jadwal Kegiatan'}</Title>
             {!events || events.length === 0 ? (
               <p className="text-center text-[#8890b5] mt-8">Belum ada kegiatan mendatang.</p>
             ) : (
@@ -597,17 +589,17 @@ export default function BlockRenderer({
     // ===== FEDERASI =====
     case 'federations':
       return (
-        <section {...sect} className={'py-20 ' + SCROLL_MT + ' ' + (c.dark ? 'bg-brand' : 'bg-white')}>
+        <section {...sect} className={'py-20 ' + SCROLL_MT + ' ' + bgClass(bg)}>
           <div className="max-w-6xl mx-auto px-5">
             {c.eyebrow && <Eyebrow>{c.eyebrow}</Eyebrow>}
-            <Title light={c.dark}>{c.title ?? 'Afiliasi & Federasi'}</Title>
+            <Title light={dark}>{c.title ?? 'Afiliasi & Federasi'}</Title>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mt-8">
               {(c.federations ?? []).map((f, i) => (
                 <div
                   key={i}
                   className={
                     'rounded-xl p-6 text-center border-b-[3px] border-accent ' +
-                    (c.dark ? 'bg-brand-soft' : 'bg-white shadow-[0_4px_14px_rgba(10,14,39,0.06)]')
+                    (dark ? 'bg-brand-soft' : 'bg-white shadow-[0_4px_14px_rgba(10,14,39,0.06)]')
                   }
                 >
                   {f.image_url ? (
@@ -624,7 +616,7 @@ export default function BlockRenderer({
                   <div
                     className={
                       'font-display text-xl font-bold mb-2 ' +
-                      (c.dark ? 'text-white' : 'text-[#0a0e27]')
+                      (dark ? 'text-white' : 'text-[#0a0e27]')
                     }
                   >
                     {f.abbr}
@@ -641,23 +633,27 @@ export default function BlockRenderer({
     case 'legal': {
       const about = siteContent?.about
       const legal = about?.legal ?? []
-      const clubName = siteContent?.clubName ?? ''
-      // Jabatan ketua otomatis: "Ketua {Nama Club}"
-      const chairTitle = clubName ? `Ketua ${clubName}` : (about?.chairman ?? '')
+      // Poin 5: label jabatan pimpinan diambil dari jabatan sebenarnya
+      // (chairmanRole, dikirim dari server berdasarkan pimpinan puncak).
+      // Fallback: pengaturan "Jabatan Ketua", lalu teks netral.
+      const chairTitle =
+        (chairmanRole && chairmanRole.trim()) ||
+        (about?.chairman && about.chairman.trim()) ||
+        'Kepemimpinan'
       const showChair = !!(chairmanName || chairmanPhoto || chairTitle)
       if (!showChair && legal.length === 0) return null
       return (
-        <section {...sect} className={'py-20 ' + SCROLL_MT + ' ' + (c.dark ? 'bg-brand' : 'bg-[#f4f5fa]')}>
+        <section {...sect} className={'py-20 ' + SCROLL_MT + ' ' + bgClass(bg)}>
           <div className="max-w-4xl mx-auto px-5">
             {c.eyebrow && <Eyebrow>{c.eyebrow}</Eyebrow>}
-            <Title light={c.dark}>{c.title ?? 'Legalitas & Kepengurusan'}</Title>
+            <Title light={dark}>{c.title ?? 'Legalitas & Kepengurusan'}</Title>
 
             {/* Kartu Ketua */}
             {showChair && (
               <div
                 className={
                   'mt-8 rounded-xl p-6 text-center border-b-[3px] border-accent max-w-md mx-auto ' +
-                  (c.dark ? 'bg-brand-soft' : 'bg-white shadow-[0_4px_14px_rgba(10,14,39,0.06)]')
+                  (dark ? 'bg-brand-soft' : 'bg-white shadow-[0_4px_14px_rgba(10,14,39,0.06)]')
                 }
               >
                 {chairmanPhoto ? (
@@ -677,13 +673,13 @@ export default function BlockRenderer({
                   </div>
                 )}
                 <p className="text-xs text-[#8890b5] uppercase tracking-[0.15em] mb-1">
-                  {chairTitle || 'Kepemimpinan'}
+                  {chairTitle}
                 </p>
                 {chairmanName && (
                   <p
                     className={
                       'font-display font-bold uppercase tracking-wide ' +
-                      (c.dark ? 'text-white' : 'text-[#0a0e27]')
+                      (dark ? 'text-white' : 'text-[#0a0e27]')
                     }
                   >
                     {chairmanName}
@@ -700,7 +696,7 @@ export default function BlockRenderer({
                     key={i}
                     className={
                       'rounded-xl p-5 flex gap-4 items-start ' +
-                      (c.dark ? 'bg-brand-soft' : 'bg-white shadow-[0_4px_14px_rgba(10,14,39,0.06)]')
+                      (dark ? 'bg-brand-soft' : 'bg-white shadow-[0_4px_14px_rgba(10,14,39,0.06)]')
                     }
                   >
                     <div className="w-10 h-10 rounded-lg grid place-items-center text-accent shrink-0 bg-[#ff5e3a]/10">
@@ -710,7 +706,7 @@ export default function BlockRenderer({
                       <p
                         className={
                           'font-semibold leading-snug ' +
-                          (c.dark ? 'text-white' : 'text-[#0a0e27]')
+                          (dark ? 'text-white' : 'text-[#0a0e27]')
                         }
                       >
                         {item.label}
@@ -736,7 +732,7 @@ export default function BlockRenderer({
       if (!name && !logo && !label && !body) return null
       const imgLeft = c.image_side === 'left'
       return (
-        <section {...sect} className={'py-20 ' + SCROLL_MT + ' ' + (c.dark ? 'bg-brand' : 'bg-white')}>
+        <section {...sect} className={'py-20 ' + SCROLL_MT + ' ' + bgClass(bg)}>
           <div className="max-w-6xl mx-auto px-5">
             <div className="grid md:grid-cols-2 gap-10 items-center">
               {/* Teks */}
@@ -746,7 +742,7 @@ export default function BlockRenderer({
                   <h2
                     className={
                       'font-display text-3xl font-bold uppercase tracking-wide mt-2 break-words ' +
-                      (c.dark ? 'text-white' : 'text-[#0a0e27]')
+                      (dark ? 'text-white' : 'text-[#0a0e27]')
                     }
                   >
                     {name}
@@ -756,7 +752,7 @@ export default function BlockRenderer({
                   <h3
                     className={
                       'font-display text-xl font-bold uppercase tracking-wide mt-4 break-words ' +
-                      (c.dark ? 'text-[#ff8a3a]' : 'text-accent')
+                      (dark ? 'text-[#ff8a3a]' : 'text-accent')
                     }
                   >
                     {label}
@@ -766,7 +762,7 @@ export default function BlockRenderer({
                   <p
                     className={
                       'text-lg leading-relaxed mt-3 whitespace-pre-line break-words ' +
-                      (c.dark ? 'text-[#8890b5]' : 'text-[#3a3f5c]')
+                      (dark ? 'text-[#8890b5]' : 'text-[#3a3f5c]')
                     }
                   >
                     {body}
@@ -806,10 +802,10 @@ export default function BlockRenderer({
       const roots = orgRoots ?? []
       if (roots.length === 0) return null
       return (
-        <section {...sect} className={'py-20 ' + SCROLL_MT + ' ' + (c.dark ? 'bg-brand' : 'bg-[#f4f5fa]')}>
+        <section {...sect} className={'py-20 ' + SCROLL_MT + ' ' + bgClass(bg)}>
           <div className="max-w-6xl mx-auto px-5">
             {c.eyebrow && <Eyebrow>{c.eyebrow}</Eyebrow>}
-            <Title light={c.dark}>{c.title ?? 'Struktur Organisasi'}</Title>
+            <Title light={dark}>{c.title ?? 'Struktur Organisasi'}</Title>
             <div className="mt-10">
               <OrgChart roots={roots} mode="summary" />
             </div>

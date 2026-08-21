@@ -4,34 +4,34 @@ import { createClient } from '@/lib/supabase/server'
 import { getSiteContent } from '@/lib/site-content'
 import PublicNavbar from '@/components/public/public-navbar'
 import PublicFooter from '@/components/public/public-footer'
+import BackToTop from '@/components/public/back-to-top'
 import OrgChart, { buildTree, type OrgFlat } from '@/components/public/org-chart'
 
 export const metadata = {
   title: 'Struktur Organisasi',
 }
 
-// Bentuk baris hasil join org_structure -> members_public
+// Bentuk baris hasil view org_structure_public (sudah join ke members_public).
 type Row = {
   id: string
   parent_id: string | null
   role_override: string | null
   sort_order: number
-  member: {
-    full_name: string | null
-    position: string | null
-    photo_url: string | null
-  } | null
+  member_full_name: string | null
+  member_position: string | null
+  member_photo_url: string | null
 }
 
 export default async function StrukturPage() {
   const supabase = await createClient()
   const c = await getSiteContent()
 
-  // Ambil posisi aktif + data anggota (live) via foreign table select.
+  // Ambil dari VIEW publik agar nama & foto tetap muncul untuk pengunjung anonim
+  // (menghindari blokir RLS pada tabel members di production).
   const { data } = await supabase
-    .from('org_structure')
+    .from('org_structure_public')
     .select(
-      'id, parent_id, role_override, sort_order, member:members(full_name, position, photo_url)'
+      'id, parent_id, role_override, sort_order, member_full_name, member_position, member_photo_url'
     )
     .eq('is_active', true)
     .order('sort_order', { ascending: true })
@@ -42,9 +42,9 @@ export default async function StrukturPage() {
   const flat: OrgFlat[] = rows.map((r) => ({
     id: r.id,
     parent_id: r.parent_id,
-    role: (r.role_override || r.member?.position || '').trim(),
-    name: r.member?.full_name || 'Tanpa Nama',
-    photo_url: r.member?.photo_url ?? null,
+    role: (r.role_override || r.member_position || '').trim(),
+    name: r.member_full_name || 'Tanpa Nama',
+    photo_url: r.member_photo_url ?? null,
     sort_order: r.sort_order,
   }))
 
@@ -89,6 +89,9 @@ export default async function StrukturPage() {
       </section>
 
       <PublicFooter content={c} />
+
+      {/* Tombol gulir ke atas */}
+      <BackToTop />
     </div>
   )
 }

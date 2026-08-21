@@ -55,6 +55,40 @@ export function sortMembersByHierarchy<T extends SortableMember>(
 }
 
 // ============================================================
+//  PIMPINAN PUNCAK (untuk foto/nama di blok Legalitas, dll)
+//  Ambil anggota dengan jabatan PALING ATAS menurut daftar
+//  `positionOptions`. Anti-rapuh: tidak bergantung pada kata
+//  "ketua" secara harfiah, sehingga "Ketua Umum" / "Ketua Harian"
+//  atau nama jabatan apa pun tetap terbaca selama ada di daftar.
+//
+//  - Hanya anggota yang jabatannya ADA di daftar yang dipertimbangkan
+//    (rank < order.length). Jika tak satu pun cocok -> null.
+//  - Tie-breaker: nomor registrasi (lama duluan), konsisten dengan
+//    pengurutan anggota lain.
+// ============================================================
+export function pickTopMember<T extends SortableMember>(
+  members: T[],
+  order: string[]
+): T | null {
+  let best: T | null = null
+  let bestRank = order.length // ambang: harus lebih kecil dari ini agar dianggap
+  for (const m of members) {
+    const rank = positionRank(m.position, order)
+    if (rank >= order.length) continue // jabatan tidak ada di daftar -> lewati
+    if (
+      best === null ||
+      rank < bestRank ||
+      (rank === bestRank &&
+        compareMemberNumber(m.member_number, best.member_number) < 0)
+    ) {
+      best = m
+      bestRank = rank
+    }
+  }
+  return best
+}
+
+// ============================================================
 //  DETEKSI "DATA LAMA"
 //  Jabatan/kategori dianggap data lama bila TIDAK kosong TAPI
 //  tidak ada di daftar pilihan saat ini (berarti nilai usang).

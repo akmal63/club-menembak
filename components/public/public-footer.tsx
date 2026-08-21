@@ -1,8 +1,12 @@
 import Image from 'next/image'
 import { MapPin, Mail, Phone } from 'lucide-react'
 import type { SiteContent } from '@/lib/site-content'
+import { DEFAULT_FOOTER_TAGLINE } from '@/lib/site-content'
 
 export default function PublicFooter({ content: c }: { content: SiteContent }) {
+  // Teks deskripsi footer: pakai isian admin bila ada, jika kosong pakai default.
+  const tagline = c.footerTagline?.trim() ? c.footerTagline : DEFAULT_FOOTER_TAGLINE
+
   return (
     <footer id="kontak" className="bg-brand text-white pt-20 pb-8">
       <div className="max-w-6xl mx-auto px-5">
@@ -23,9 +27,8 @@ export default function PublicFooter({ content: c }: { content: SiteContent }) {
                 {c.clubName}
               </span>
             </div>
-            <p className="text-[#8890b5] text-sm leading-relaxed">
-              Perkumpulan terbuka bagi semua orang yang ingin menyalurkan bakat,
-              hobi, maupun kreativitas di bidang olahraga menembak.
+            <p className="text-[#8890b5] text-sm leading-relaxed whitespace-pre-line">
+              {tagline}
             </p>
           </div>
 

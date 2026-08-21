@@ -91,6 +91,19 @@ export default function ContentEditorForm({ initial }: { initial: SiteContent })
           </div>
 
           <div className="pt-2">
+            <Area
+              label="Teks Deskripsi Footer"
+              name="footer_tagline"
+              defaultValue={initial.footerTagline ?? ''}
+              rows={3}
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Teks singkat di bagian bawah (footer), di bawah logo club. Kosongkan
+              untuk memakai teks bawaan.
+            </p>
+          </div>
+
+          <div className="pt-2">
             <Field
               label="Teks Hak Cipta (footer)"
               name="copyright_text"

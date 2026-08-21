@@ -24,6 +24,10 @@ export type BlockButton = {
   button_link?: string
 }
 
+// Pilihan warna latar section (poin 7).
+// 'theme' = navy ikut tema, 'white' = putih, 'gray' = abu-abu lembut.
+export type BlockBg = 'theme' | 'white' | 'gray'
+
 // Isi tiap tipe (semua opsional agar fleksibel)
 export type BlockContent = BlockButton & {
   // umum
@@ -31,7 +35,8 @@ export type BlockContent = BlockButton & {
   eyebrow?: string
   title?: string
   body?: string
-  dark?: boolean
+  dark?: boolean // LAMA: latar gelap (dipertahankan utk kompatibilitas data lama)
+  bg?: BlockBg // BARU: warna latar (menggantikan `dark`; lihat resolveBg)
   // hero
   welcome?: string
   highlight?: string
@@ -74,6 +79,43 @@ export const BLOCK_LABELS: Record<BlockType, string> = {
 
 // Tipe yang menarik data dari tabel lain / pengaturan (tak punya konten teks utama)
 export const AUTO_TYPES: BlockType[] = ['gallery', 'news', 'schedules', 'events', 'legal', 'identity_club', 'org_structure']
+
+// ============================================================
+//  WARNA LATAR SECTION (poin 7)
+//  Tipe blok yang menyediakan pilihan warna latar.
+//  (hero, cta, gallery, news punya latar khusus sendiri -> dikecualikan)
+// ============================================================
+export const BG_TYPES: BlockType[] = [
+  'text',
+  'image',
+  'text_image',
+  'cards',
+  'cta',
+  'gallery',
+  'news',
+  'schedules',
+  'events',
+  'federations',
+  'legal',
+  'identity_club',
+  'org_structure',
+]
+
+// Label ramah pilihan warna (dipakai di dropdown editor)
+export const BG_LABELS: Record<BlockBg, string> = {
+  theme: 'Tema (navy, ikut tema)',
+  white: 'Putih',
+  gray: 'Abu-abu',
+}
+
+// Tentukan warna latar final sebuah blok.
+// Prioritas: field `bg` baru -> pemetaan dari `dark` lama -> 'white'.
+// Ini menjaga data lama (yang hanya punya `dark`) tetap tampil benar.
+export function resolveBg(content: BlockContent): BlockBg {
+  if (content.bg) return content.bg
+  if (content.dark) return 'theme'
+  return 'white'
+}
 
 // ID section bawaan tiap tipe (dipakai bila admin tidak mengisi anchor manual)
 export const DEFAULT_ANCHORS: Partial<Record<BlockType, string>> = {

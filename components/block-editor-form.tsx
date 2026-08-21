@@ -3,7 +3,7 @@
 import { useActionState, useState } from 'react'
 import Link from 'next/link'
 import type { BlockType, BlockContent } from '@/lib/blocks'
-import { AUTO_TYPES, CARD_ICON_KEYS, CARD_ICON_LABELS } from '@/lib/blocks'
+import { AUTO_TYPES, BG_TYPES, BG_LABELS, resolveBg, CARD_ICON_KEYS, CARD_ICON_LABELS } from '@/lib/blocks'
 import type { BlockState } from '@/app/dashboard/content/actions'
 import ImageInput from '@/components/image-input'
 
@@ -32,6 +32,11 @@ export default function BlockEditorForm({
   const showHero = type === 'hero'
   const showButton = ['hero', 'text', 'text_image', 'cta'].includes(type)
   const isAuto = AUTO_TYPES.includes(type)
+
+  // Poin 7: tipe yang punya pilihan warna latar. Nilai awal dari data lama
+  // dipetakan lewat resolveBg (dark lama -> tema, selain itu -> putih).
+  const showBg = BG_TYPES.includes(type)
+  const initialBg = resolveBg(c)
 
   return (
     <form action={formAction} className="space-y-4 max-w-2xl">
@@ -162,9 +167,7 @@ export default function BlockEditorForm({
         <div className="space-y-3">
           <p className="text-sm font-medium text-[#8890b5]">Kartu (isi hingga 3)</p>
           <p className="text-xs text-[#8890b5] bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
-            Tips: pada Isi Kartu, jika Anda menulis daftar dipisah koma (mis.
-            <b> Teamwork, Inovasi, Integritas</b>), otomatis tampil sebagai badge/chip.
-            Jika kalimat biasa, tampil sebagai paragraf.
+            Isi Kartu ditampilkan sebagai teks biasa. Anda bisa menulis beberapa baris.
           </p>
           {[0, 1, 2].map((i) => (
             <div key={i} className="border rounded-lg p-3 space-y-2">
@@ -237,17 +240,23 @@ export default function BlockEditorForm({
         </div>
       )}
 
-      {/* Latar gelap (untuk beberapa tipe) */}
-      {['text', 'image', 'text_image', 'cards', 'legal', 'identity_club', 'org_structure'].includes(type) && (
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            type="checkbox"
-            name="dark"
-            defaultChecked={c.dark ?? false}
-            className="w-4 h-4 accent-[#ff5e3a]"
-          />
-          <span className="text-sm font-medium">Latar gelap (navy)</span>
-        </label>
+      {/* Warna latar section (poin 7) — untuk semua tipe berlatar */}
+      {showBg && (
+        <div>
+          <label className="block text-sm font-medium mb-1">Warna Latar Section</label>
+          <select
+            name="bg"
+            defaultValue={initialBg}
+            className="w-full border rounded-lg px-3 py-2 bg-white"
+          >
+            <option value="theme">{BG_LABELS.theme}</option>
+            <option value="white">{BG_LABELS.white}</option>
+            <option value="gray">{BG_LABELS.gray}</option>
+          </select>
+          <p className="text-xs text-[#8890b5] mt-1">
+            Pilih warna latar belakang blok ini. &quot;Tema&quot; mengikuti warna navy tema.
+          </p>
+        </div>
       )}
 
       {/* Tombol (CTA per blok) */}
